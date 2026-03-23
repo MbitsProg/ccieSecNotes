@@ -341,6 +341,19 @@ function countLeaves(node) {
 }
 function totalLeaves() { return db.sections.reduce((a,c)=>a+countLeaves(c),0); }
 
+// Collect every title in the tree (lowercased) for uniqueness checks, optionally excluding one id
+function allTitles(excludeId) {
+  const titles = [];
+  function walk(nodes) {
+    nodes.forEach(n => {
+      if (n.id !== excludeId) titles.push(n.title.trim().toLowerCase());
+      if (n.children) walk(n.children);
+    });
+  }
+  walk(db.sections);
+  return titles;
+}
+
 /* ── Tree render ── */
 function renderTree() {
   const tree = document.getElementById('tree');
@@ -349,128 +362,85 @@ function renderTree() {
 
   function nodeMatches(n) {
     if (isLeaf(n)) return !q || n.id.includes(q) || n.title.toLowerCase().includes(q) || (n.commands||'').toLowerCase().includes(q);
-    return (n.children||[]).some(c=>nodeMatches(c));
+    return (n.children||[]).some(c => nodeMatches(c));
   }
 
-  function buildLevel(nodes, depth) {
-    nodes.forEach(node => {
-      if (q && !nodeMatches(node)) return;
-      const isOpen = q ? true : openNodes.has(node.id);
-      const active = activePath.includes(node.id);
-      const leaf = isLeaf(node);
+  // Returns a DOM element for a node at given depth, or null if filtered out.
+  function buildNode(node, depth) {
+    if (q && !nodeMatches(node)) return null;
+    const leaf = isLeaf(node);
+    const isOpen = q ? true : openNodes.has(node.id);
+    const isActive = leaf
+      ? activePath[activePath.length - 1] === node.id
+      : activePath.includes(node.id) && activePath[activePath.length - 1] === node.id;
 
-      const wrap = document.createElement('div');
-      wrap.className = `node lvl${depth+1}` + (isOpen && !leaf ? ' open' : '');
-      wrap.dataset.id = node.id;
+    const wrap = document.createElement('div');
+    wrap.className = `node lvl${depth + 1}` + (!leaf && isOpen ? ' open' : '');
 
-      const btn = document.createElement('button');
-      btn.className = 'node-btn' + (active && (leaf || activePath[activePath.length-1]===node.id) ? ' active' : '');
+    // Button
+    const btn = document.createElement('button');
+    btn.className = 'node-btn' + (isActive ? ' active' : '');
 
-      if (!leaf) {
-        const chev = document.createElement('span');
-        chev.className = 'chevron'; chev.textContent = '▶';
-        btn.appendChild(chev);
+    if (!leaf) {
+      const chev = document.createElement('span');
+      chev.className = 'chevron'; chev.textContent = '▶';
+      btn.appendChild(chev);
+    } else {
+      const dot = document.createElement('span');
+      dot.className = 'node-dot' + (node.commands || node.images?.length ? ' filled' : '');
+      btn.appendChild(dot);
+    }
+
+    const idSpan = document.createElement('span');
+    idSpan.className = 'node-id';
+    idSpan.style.fontSize = depth === 0 ? '13px' : depth === 1 ? '12px' : '11px';
+    idSpan.textContent = node.id;
+    btn.appendChild(idSpan);
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'node-label';
+    labelSpan.style.cssText = 'font-size:11px;color:var(--hint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    labelSpan.textContent = node.title;
+    btn.appendChild(labelSpan);
+
+    if (!leaf) {
+      const badge = document.createElement('span');
+      badge.className = 'node-badge';
+      badge.textContent = countLeaves(node);
+      btn.appendChild(badge);
+    }
+
+    btn.onclick = () => {
+      if (leaf) {
+        selectEntry(node.id); closeSidebar();
       } else {
-        const dot = document.createElement('span');
-        dot.className = 'node-dot' + (node.commands||node.images?.length ? ' filled' : '');
-        btn.appendChild(dot);
+        if (openNodes.has(node.id)) openNodes.delete(node.id);
+        else openNodes.add(node.id);
+        activePath = buildBreadcrumbParts(node.id)?.map(p => p.id) || [node.id];
+        renderTree(); showFolderView(node.id);
       }
+    };
+    wrap.appendChild(btn);
 
-      const idSpan = document.createElement('span');
-      idSpan.className = 'node-id';
-      idSpan.style.fontSize = depth===0?'12px':depth===1?'12px':'11px';
-      idSpan.textContent = node.id;
-      btn.appendChild(idSpan);
+    // Children container — only for branch nodes
+    if (!leaf && node.children) {
+      const childContainer = document.createElement('div');
+      childContainer.className = `lvl${depth + 1}-children`;
+      node.children.forEach(child => {
+        const childEl = buildNode(child, depth + 1);
+        if (childEl) childContainer.appendChild(childEl);
+      });
+      wrap.appendChild(childContainer);
+    }
 
-      const labelSpan = document.createElement('span');
-      labelSpan.className = 'node-label';
-      labelSpan.style.cssText = `font-size:${depth===2?'11px':'11px'};color:var(--hint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;`;
-      labelSpan.textContent = node.title;
-      btn.appendChild(labelSpan);
-
-      if (!leaf) {
-        const badge = document.createElement('span');
-        badge.className = 'node-badge';
-        badge.textContent = countLeaves(node);
-        btn.appendChild(badge);
-      }
-
-      btn.onclick = () => {
-        if (leaf) { selectEntry(node.id); closeSidebar(); }
-        else {
-          if (openNodes.has(node.id)) openNodes.delete(node.id);
-          else openNodes.add(node.id);
-          activePath = [node.id];
-          renderTree(); showFolderView(node.id);
-        }
-      };
-      wrap.appendChild(btn);
-
-      if (!leaf && node.children) {
-        const childWrap = document.createElement('div');
-        childWrap.className = `lvl${depth+1}-children`;
-        buildLevel(node.children, depth+1);
-        node.children.forEach(child => {
-          if (q && !nodeMatches(child)) return;
-          const cOpen = q ? true : openNodes.has(child.id);
-          const cLeaf = isLeaf(child);
-          const cActive = activePath.includes(child.id);
-          const cWrap = document.createElement('div');
-          cWrap.className = `node lvl${depth+2}` + (cOpen && !cLeaf ? ' open' : '');
-
-          const cBtn = document.createElement('button');
-          cBtn.className = 'node-btn' + (cActive && (cLeaf || activePath[activePath.length-1]===child.id) ? ' active' : '');
-
-          if (!cLeaf) {
-            const cc = document.createElement('span'); cc.className='chevron'; cc.textContent='▶'; cBtn.appendChild(cc);
-          } else {
-            const cd = document.createElement('span');
-            cd.className='node-dot'+(child.commands||child.images?.length?' filled':'');
-            cBtn.appendChild(cd);
-          }
-          const cIdS = document.createElement('span'); cIdS.className='node-id'; cIdS.style.fontSize='11px'; cIdS.textContent=child.id; cBtn.appendChild(cIdS);
-          const cLbl = document.createElement('span'); cLbl.className='node-label'; cLbl.style.cssText='font-size:11px;color:var(--hint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; cLbl.textContent=child.title; cBtn.appendChild(cLbl);
-          if (!cLeaf) { const cb2=document.createElement('span'); cb2.className='node-badge'; cb2.textContent=countLeaves(child); cBtn.appendChild(cb2); }
-
-          cBtn.onclick = () => {
-            if (cLeaf) { selectEntry(child.id); closeSidebar(); }
-            else {
-              if (openNodes.has(child.id)) openNodes.delete(child.id);
-              else openNodes.add(child.id);
-              activePath = [node.id, child.id];
-              renderTree(); showFolderView(child.id);
-            }
-          };
-          cWrap.appendChild(cBtn);
-
-          if (!cLeaf && child.children) {
-            const gcWrap = document.createElement('div');
-            gcWrap.className = `lvl${depth+2}-children`;
-            child.children.forEach(gc => {
-              if (q && !nodeMatches(gc)) return;
-              const gcLeaf = isLeaf(gc);
-              const gcActive = activePath[activePath.length-1]===gc.id;
-              const gcWrap2 = document.createElement('div'); gcWrap2.className=`node lvl${depth+3}`;
-              const gcBtn = document.createElement('button');
-              gcBtn.className='node-btn'+(gcActive?' active':'');
-              const gcd = document.createElement('span'); gcd.className='node-dot'+(gc.commands||gc.images?.length?' filled':''); gcBtn.appendChild(gcd);
-              const gcId = document.createElement('span'); gcId.className='node-id'; gcId.style.fontSize='11px'; gcId.textContent=gc.id; gcBtn.appendChild(gcId);
-              const gcLbl = document.createElement('span'); gcLbl.className='node-label'; gcLbl.style.cssText='font-size:11px;color:var(--hint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; gcLbl.textContent=gc.title; gcBtn.appendChild(gcLbl);
-              gcBtn.onclick = () => { selectEntry(gc.id); closeSidebar(); };
-              gcWrap2.appendChild(gcBtn);
-              gcWrap.appendChild(gcWrap2);
-            });
-            cWrap.appendChild(gcWrap);
-          }
-          childWrap.appendChild(cWrap);
-        });
-        wrap.appendChild(childWrap);
-      }
-      tree.appendChild(wrap);
-    });
+    return wrap;
   }
 
-  buildLevel(db.sections, 0);
+  db.sections.forEach(sec => {
+    const el = buildNode(sec, 0);
+    if (el) tree.appendChild(el);
+  });
+
   const sf = document.getElementById('sidebar-footer');
   if (sf) sf.textContent = `${db.sections.length} sections · ${totalLeaves()} tasks`;
 }
@@ -492,8 +462,7 @@ function showFolderView(nodeId) {
   ).join('');
   btnAdd.style.display = 'none';
 
-  const canAddChild = depth < 2; // can add subsection if depth 0 or 1; entries at depth 1
-  const canAddEntry = depth === 1; // entries go under depth-1 nodes (5.1.x)
+
 
   const childItems = (node.children||[]).map(c => {
     const meta = isLeaf(c) ? (c.tags||[]).slice(0,2).join(', ')||'' : `${countLeaves(c)} tasks`;
@@ -505,13 +474,12 @@ function showFolderView(nodeId) {
     </div>`;
   }).join('');
 
-  const addBtns = `
-    ${canAddChild && depth===0 ? `<button class="btn-sm primary desktop-only" onclick="openAddNodeModal('${esc(nodeId)}',1)">＋ Add subsection</button>` : ''}
-    ${canAddEntry ? `<button class="btn-sm primary desktop-only" onclick="openAddEntryModalUnder('${esc(nodeId)}')">＋ Add task</button>` : ''}
-    ${canAddChild && depth===1 ? `<button class="btn-sm primary desktop-only" onclick="openAddEntryModalUnder('${esc(nodeId)}')">＋ Add task</button>` : ''}
-    <button class="btn-sm desktop-only" onclick="openEditNodeModal('${esc(nodeId)}')">Rename</button>
-    <button class="btn-sm danger desktop-only" onclick="deleteNode('${esc(nodeId)}')">Delete</button>
-  `;
+  const addBtns = [
+    depth===0 ? `<button class="btn-sm primary desktop-only" onclick="openAddNodeModal('${esc(nodeId)}',1)">+ Add subsection</button>` : '',
+    depth===1 ? `<button class="btn-sm primary desktop-only" onclick="openAddEntryModalUnder('${esc(nodeId)}')">+ Add task</button>` : '',
+    `<button class="btn-sm desktop-only" onclick="openEditNodeModal('${esc(nodeId)}')">Rename</button>`,
+    `<button class="btn-sm danger desktop-only" onclick="deleteNode('${esc(nodeId)}')">Delete</button>`
+  ].join('');
 
   content.innerHTML = `
     <div class="folder-view">
@@ -698,7 +666,8 @@ function submitAddNode(parentId, depth) {
   const id = document.getElementById('f-nid').value.trim();
   const title = document.getElementById('f-ntitle').value.trim();
   if (!id) { alert('ID is required'); return; }
-  if (findNode(id, db.sections)) { alert('ID already exists'); return; }
+  if (findNode(id, db.sections)) { alert('That ID already exists. Please use a different one.'); return; }
+  if (title && allTitles().includes(title.toLowerCase())) { alert(`"${title}" is already used. Please use a unique title.`); return; }
   const newNode = { id, title: title||id, children:[] };
   if (!parentId) {
     db.sections.push(newNode);
@@ -740,8 +709,10 @@ function openAddEntryModal() {
 function submitAddEntry(parentId) {
   const parent = findNode(parentId, db.sections);
   const id = document.getElementById('f-id').value.trim();
+  const title = document.getElementById('f-title').value.trim();
   if (!id) { alert('Task ID required'); return; }
-  if (findNode(id, db.sections)) { alert('ID already exists'); return; }
+  if (findNode(id, db.sections)) { alert('That ID already exists. Please use a different one.'); return; }
+  if (title && allTitles().includes(title.toLowerCase())) { alert(`"${title}" is already used. Please use a unique title.`); return; }
   const entry = {
     id, title: document.getElementById('f-title').value.trim()||id,
     commands: document.getElementById('f-cmds').value.trim(),
@@ -774,7 +745,11 @@ function openEditEntryModal(entryId) {
 }
 function submitEditEntry(entryId) {
   const entry = findNode(entryId, db.sections); if (!entry) return;
-  entry.title = document.getElementById('f-title').value.trim()||entry.title;
+  const newTitle = document.getElementById('f-title').value.trim();
+  if (newTitle && newTitle.toLowerCase() !== entry.title.toLowerCase() && allTitles(entryId).includes(newTitle.toLowerCase())) {
+    alert(`"${newTitle}" is already used. Please use a unique title.`); return;
+  }
+  entry.title = newTitle || entry.title;
   entry.commands = document.getElementById('f-cmds').value.trim();
   entry.notes = document.getElementById('f-notes').value.trim();
   entry.tags = document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
@@ -795,7 +770,11 @@ function openEditNodeModal(nodeId) {
 }
 function submitRename(nodeId) {
   const node = findNode(nodeId, db.sections); if (!node) return;
-  node.title = document.getElementById('f-ntitle').value.trim()||node.title;
+  const newTitle = document.getElementById('f-ntitle').value.trim();
+  if (newTitle && newTitle.toLowerCase() !== node.title.toLowerCase() && allTitles(nodeId).includes(newTitle.toLowerCase())) {
+    alert(`"${newTitle}" is already used. Please use a unique title.`); return;
+  }
+  node.title = newTitle || node.title;
   persist(); closeModal(); renderTree(); showFolderView(nodeId);
 }
 
