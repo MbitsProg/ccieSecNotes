@@ -19,6 +19,12 @@
   --mono:'Cascadia Code','Fira Code','Consolas',monospace;
   --sans:'Segoe UI',system-ui,sans-serif;
   --radius:8px;--radius-lg:12px;--nav-h:52px;
+  /* syntax colors */
+  --syn-prompt:#f0b860;   /* ASA# Router# lines */
+  --syn-output:#9db8d2;   /* show output lines */
+  --syn-comment:#6a9955;  /* ! comment lines */
+  --syn-keyword:#c792ea;  /* keywords: no, default, permit, deny */
+  --syn-interface:#89ddff;/* interface/ip/nat lines */
 }
 html,body{height:100%;overflow:hidden;}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
@@ -90,7 +96,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 /* ── Loading ── */
 #loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:200;}
 #loading-screen .l-logo{font-family:var(--mono);font-size:20px;color:var(--accent);font-weight:600;}
-#loading-screen .l-msg{font-size:12px;color:var(--hint);}
 .spinner{width:20px;height:20px;border:2px solid var(--border-em);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -100,7 +105,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 #welcome p{font-size:13px;color:var(--muted);text-align:center;max-width:260px;line-height:1.6;}
 
 /* ── Folder view ── */
-.folder-header{margin-bottom:24px;}
 .folder-id{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--accent-text);margin-bottom:2px;}
 .folder-title-text{font-size:14px;color:var(--muted);margin-bottom:16px;}
 .folder-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;}
@@ -112,25 +116,22 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .child-card .c-meta{font-size:11px;color:var(--hint);flex-shrink:0;}
 .child-card .c-arrow{color:var(--hint);font-size:13px;flex-shrink:0;}
 
-/* ── Inline form (new section / new task inside folder view) ── */
+/* ── Inline add form ── */
 .inline-form{background:var(--card);border:0.5px solid var(--accent);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:20px;}
 .inline-form h3{font-size:13px;font-weight:500;color:var(--accent-text);margin-bottom:16px;}
 .if-row{margin-bottom:12px;}
 .if-row label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--hint);margin-bottom:5px;}
-.if-row input,.if-row textarea{width:100%;padding:9px 12px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:13px;font-family:var(--sans);outline:none;}
-.if-row textarea{font-family:var(--mono);resize:vertical;line-height:1.65;}
-.if-row input:focus,.if-row textarea:focus{border-color:var(--accent);}
+.if-row input{width:100%;padding:9px 12px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:13px;font-family:var(--sans);outline:none;}
+.if-row input:focus{border-color:var(--accent);}
 .if-actions{display:flex;gap:8px;margin-top:16px;}
 .if-save{padding:8px 20px;border-radius:var(--radius);border:none;background:var(--accent);cursor:pointer;font-size:13px;color:#1a1200;font-family:var(--sans);font-weight:600;}
-.if-save:hover{opacity:0.9;}
 .if-cancel{padding:8px 16px;border-radius:var(--radius);border:0.5px solid var(--border-em);background:transparent;cursor:pointer;font-size:13px;color:var(--muted);font-family:var(--sans);}
-.if-cancel:hover{color:var(--text);}
 
-/* ── Entry view ── */
+/* ── Entry topbar ── */
 .entry-topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
 .entry-meta{min-width:0;}
 .entry-id{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--accent-text);}
-.entry-title-disp{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.entry-title-disp{font-size:14px;color:var(--muted);margin-top:3px;}
 .entry-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;}
 .btn-sm{padding:6px 12px;border-radius:var(--radius);border:0.5px solid var(--border-em);background:var(--card);cursor:pointer;font-size:12px;color:var(--muted);font-family:var(--sans);}
 .btn-sm:hover{color:var(--text);}
@@ -138,43 +139,56 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .btn-sm.primary{color:var(--accent-text);border-color:var(--accent);background:var(--accent-dim);}
 .btn-sm.primary:hover{background:rgba(224,152,64,0.22);}
 
-/* ── Inline entry editor (full-width, no popup) ── */
-.entry-editor{width:100%;}
-.ee-row{margin-bottom:16px;}
-.ee-label{font-size:10px;text-transform:uppercase;letter-spacing:0.09em;color:var(--hint);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
-.ee-input{width:100%;padding:10px 12px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:14px;font-family:var(--sans);outline:none;}
-.ee-input:focus{border-color:var(--accent);}
-.ee-textarea{width:100%;padding:12px 14px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:13px;font-family:var(--mono);outline:none;resize:vertical;min-height:120px;line-height:1.75;}
-.ee-textarea:focus{border-color:var(--accent);}
-.ee-notes{font-family:var(--sans);line-height:1.75;min-height:100px;}
-.ee-tags-input{font-family:var(--sans);}
-.ee-save-bar{display:flex;align-items:center;gap:10px;padding:14px 0 4px;border-top:0.5px solid var(--border);margin-top:8px;}
-.ee-save-btn{padding:9px 24px;border-radius:var(--radius);border:none;background:var(--accent);cursor:pointer;font-size:13px;color:#1a1200;font-family:var(--sans);font-weight:600;}
-.ee-save-btn:hover{opacity:0.9;}
-.ee-discard-btn{padding:9px 16px;border-radius:var(--radius);border:0.5px solid var(--border-em);background:transparent;cursor:pointer;font-size:13px;color:var(--muted);font-family:var(--sans);}
-.ee-discard-btn:hover{color:var(--text);}
-.ee-autosave-hint{font-size:11px;color:var(--hint);}
-
-/* view mode */
-.field-label{font-size:10px;text-transform:uppercase;letter-spacing:0.09em;color:var(--hint);margin-bottom:7px;}
-.cmd-block{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px;font-family:var(--mono);font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-all;color:var(--accent-text);position:relative;}
-.copy-btn{position:absolute;top:8px;right:8px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--card2);cursor:pointer;font-size:11px;color:var(--hint);padding:4px 10px;font-family:var(--sans);}
-.copy-btn:hover{color:var(--accent-text);border-color:var(--accent);}
-.notes-block{background:var(--card);border:0.5px solid var(--border);border-left:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;font-size:13px;line-height:1.75;color:var(--text);white-space:pre-wrap;margin-bottom:18px;}
-.tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+/* ── Tags ── */
+.tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
 .tag{background:var(--tag-bg);color:var(--tag-text);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;}
 
-/* ── Images ── */
+/* ── Unified content block (view mode) ── */
+.content-block{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:0;margin-bottom:18px;font-family:var(--mono);font-size:13px;line-height:1.85;overflow:hidden;}
+.content-block-inner{padding:16px 20px;white-space:pre-wrap;word-break:break-word;}
+.copy-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:0.5px solid var(--border);background:var(--card2);}
+.copy-bar span{font-size:10px;color:var(--hint);}
+.copy-btn{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--card);cursor:pointer;font-size:11px;color:var(--hint);padding:4px 12px;font-family:var(--sans);}
+.copy-btn:hover{color:var(--accent-text);border-color:var(--accent);}
+
+/* ── Syntax highlighting ── */
+.syn-prompt{color:var(--syn-prompt);font-weight:600;}
+.syn-output{color:var(--syn-output);}
+.syn-comment{color:var(--syn-comment);font-style:italic;}
+.syn-keyword{color:var(--syn-keyword);}
+.syn-bold{font-weight:700;color:var(--text);}
+
+/* ── Images in view ── */
 .images-section{margin-bottom:18px;}
+.field-label{font-size:10px;text-transform:uppercase;letter-spacing:0.09em;color:var(--hint);margin-bottom:8px;}
 .img-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
 .img-thumb{position:relative;border-radius:var(--radius);border:0.5px solid var(--border);overflow:hidden;cursor:zoom-in;}
-.img-thumb img{display:block;max-width:min(320px,100%);max-height:220px;object-fit:cover;}
+.img-thumb img{display:block;max-width:min(360px,100%);max-height:260px;object-fit:cover;}
 .img-del{position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.75);border:none;border-radius:var(--radius);cursor:pointer;font-size:11px;color:#fff;padding:3px 8px;display:none;}
 .img-thumb:hover .img-del{display:block;}
 .img-drop-zone{border:1.5px dashed var(--border-em);border-radius:var(--radius);padding:20px 16px;text-align:center;cursor:pointer;font-size:12px;color:var(--hint);margin-top:8px;position:relative;transition:border-color .15s,color .15s;}
 .img-drop-zone:hover,.img-drop-zone.drag-over{border-color:var(--accent);color:var(--accent-text);}
 .img-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
 .img-caption{font-size:11px;color:var(--hint);margin-top:4px;}
+
+/* ── Editor ── */
+.entry-editor{width:100%;}
+.ee-row{margin-bottom:18px;}
+.ee-label{font-size:10px;text-transform:uppercase;letter-spacing:0.09em;color:var(--hint);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.ee-hint{font-size:10px;color:var(--hint);font-weight:400;text-transform:none;letter-spacing:0;}
+.ee-input{width:100%;padding:10px 12px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:14px;font-family:var(--sans);outline:none;}
+.ee-input:focus{border-color:var(--accent);}
+/* unified textarea - auto-grows via JS */
+.ee-unified{width:100%;padding:16px 18px;border:0.5px solid var(--border-em);border-radius:var(--radius-lg);background:var(--surface);color:var(--text);font-size:13px;font-family:var(--mono);outline:none;resize:none;line-height:1.85;min-height:300px;overflow-y:hidden;}
+.ee-unified:focus{border-color:var(--accent);}
+.ee-tags-input{font-family:var(--sans);}
+.autosave-bar{display:flex;align-items:center;gap:10px;padding:12px 0 4px;border-top:0.5px solid var(--border);margin-top:8px;}
+.ee-save-btn{padding:9px 24px;border-radius:var(--radius);border:none;background:var(--accent);cursor:pointer;font-size:13px;color:#1a1200;font-family:var(--sans);font-weight:600;}
+.ee-save-btn:hover{opacity:0.9;}
+.ee-discard-btn{padding:9px 16px;border-radius:var(--radius);border:0.5px solid var(--border-em);background:transparent;cursor:pointer;font-size:13px;color:var(--muted);font-family:var(--sans);}
+.ee-discard-btn:hover{color:var(--text);}
+.autosave-hint{font-size:11px;color:var(--hint);}
+.autosave-hint.saved{color:var(--success);}
 
 /* ── Lightbox ── */
 #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;align-items:center;justify-content:center;padding:16px;}
@@ -189,27 +203,21 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 /* ── Mobile ── */
 @media(max-width:640px){
   #hamburger{display:block;}
-  .tagline{display:none;}
+  .tagline,.desktop-only{display:none!important;}
   #sync-label{display:none;}
   #sidebar{position:fixed;left:0;top:var(--nav-h);bottom:0;z-index:40;transform:translateX(-100%);width:min(300px,85vw);box-shadow:4px 0 24px rgba(0,0,0,0.5);}
   #sidebar.open{transform:translateX(0);}
   #sidebar-overlay{display:block;opacity:0;pointer-events:none;transition:opacity .25s;}
   #sidebar-overlay.open{opacity:1;pointer-events:all;}
-  .desktop-only{display:none!important;}
-  #content{padding:16px 16px;}
-  .cmd-block{font-size:12px;}
-  .entry-editor .ee-textarea{min-height:80px;}
+  #content{padding:16px;}
 }
 </style>
 </head>
 <body>
-
 <div id="loading-screen">
   <div class="l-logo">⌨ cmdref</div>
   <div class="spinner"></div>
-  <div class="l-msg">Connecting…</div>
 </div>
-
 <div id="topnav">
   <button id="hamburger" onclick="toggleSidebar()">☰</button>
   <span class="logo">⌨ cmdref</span>
@@ -219,13 +227,10 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
   <button class="nav-btn desktop-only" onclick="importData()">↑ Import</button>
   <button class="nav-btn desktop-only" onclick="exportData()">↓ Export</button>
 </div>
-
 <div id="layout">
   <div id="sidebar-overlay" onclick="closeSidebar()"></div>
   <div id="sidebar">
-    <div id="search-wrap">
-      <input id="search" type="text" placeholder="Search…" oninput="filterTree(this.value)"/>
-    </div>
+    <div id="search-wrap"><input id="search" type="text" placeholder="Search…" oninput="filterTree(this.value)"/></div>
     <div id="sort-bar">
       <label>Sort:</label>
       <button class="sort-btn active" id="sb-created" onclick="setSort('created')">Created</button>
@@ -239,17 +244,13 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
     </div>
     <div id="sidebar-footer"></div>
   </div>
-
   <div id="main">
-    <div id="breadbar">
-      <div id="breadcrumb">select a task</div>
-    </div>
+    <div id="breadbar"><div id="breadcrumb">select a task</div></div>
     <div id="content">
       <div id="welcome"><div class="wicon">⌨</div><p>Select a task from the sidebar or add a new section to get started.</p></div>
     </div>
   </div>
 </div>
-
 <div id="lightbox" onclick="closeLightbox()">
   <button id="lightbox-close" onclick="closeLightbox()">✕ close</button>
   <img id="lightbox-img" src="" alt=""/>
@@ -280,7 +281,7 @@ function persist(){
   saveTimer=setTimeout(async()=>{
     try{await sbFetch('/entries',{method:'POST',body:JSON.stringify({id:DB_ROW,data:db,updated_at:new Date().toISOString()})});setSyncStatus('ok');}
     catch(e){setSyncStatus('err');showToast('Save failed — check connection');}
-  },600);
+  },800);
 }
 function setSyncStatus(s){
   document.getElementById('sync-dot').className=s;
@@ -294,23 +295,34 @@ let filterText='';
 let openNodes=new Set();
 let sortMode='created';
 let sortAsc=true;
-let editingEntryId=null; // tracks if we're in inline edit mode
+let editingEntryId=null;
+let autoSaveTimer=null;
+// Draft backup — survives accidental navigation
+let draftBackup={};
+
+/* ── Auto-save draft to localStorage (backup only, not primary storage) ── */
+function saveDraft(entryId,content,tags,title){
+  try{localStorage.setItem('draft_'+entryId,JSON.stringify({content,tags,title,ts:Date.now()}));}catch(e){}
+}
+function loadDraft(entryId){
+  try{const d=localStorage.getItem('draft_'+entryId);return d?JSON.parse(d):null;}catch(e){return null;}
+}
+function clearDraft(entryId){
+  try{localStorage.removeItem('draft_'+entryId);}catch(e){}
+}
 
 /* ── Sort ── */
 function setSort(mode){
   if(sortMode===mode){sortAsc=!sortAsc;}else{sortMode=mode;sortAsc=true;}
-  ['created','modified','alpha','dir'].forEach(m=>{
-    const b=document.getElementById('sb-'+m);
-    if(b)b.className='sort-btn'+(m===sortMode?' active':'');
-  });
+  ['created','modified','alpha','dir'].forEach(m=>{const b=document.getElementById('sb-'+m);if(b)b.className='sort-btn'+(m===sortMode?' active':'');});
   document.getElementById('sb-dir').textContent=sortAsc?'↑ Asc':'↓ Desc';
   renderTree();
 }
 function sortNodes(nodes){
-  return [...nodes].sort((a,b)=>{
+  return[...nodes].sort((a,b)=>{
     let c=0;
-    if(sortMode==='alpha') c=(a.id||'').localeCompare(b.id||'',undefined,{numeric:true});
-    else if(sortMode==='modified') c=(a.updatedAt||a.createdAt||'').localeCompare(b.updatedAt||b.createdAt||'');
+    if(sortMode==='alpha')c=(a.id||'').localeCompare(b.id||'',undefined,{numeric:true});
+    else if(sortMode==='modified')c=(a.updatedAt||a.createdAt||'').localeCompare(b.updatedAt||b.createdAt||'');
     else c=(a.createdAt||'').localeCompare(b.createdAt||'');
     return sortAsc?c:-c;
   });
@@ -332,26 +344,85 @@ function buildBreadcrumbParts(targetId,nodes=db.sections,path=[]){
   return null;
 }
 
+/* ── Syntax highlighter ── */
+function highlightContent(raw){
+  if(!raw)return'';
+  const lines=raw.split('\n');
+  return lines.map(line=>{
+    const escaped=escHtml(line);
+    // Bold: **text**
+    const withBold=escaped.replace(/\*\*(.+?)\*\*/g,'<span class="syn-bold">$1</span>');
+    // Prompt line: ends with # or has Router# ASA# hostname(config)# etc.
+    if(/^[A-Za-z0-9_\-]+(\([^)]*\))*#/.test(line)){
+      return`<span class="syn-prompt">${withBold}</span>`;
+    }
+    // Comment / separator line starting with !
+    if(/^\s*!/.test(line)){
+      return`<span class="syn-comment">${withBold}</span>`;
+    }
+    // show output lines (indented or starts with known output patterns)
+    // We detect: lines that follow a prompt line or look like show output
+    // (non-command lines that don't start with a keyword)
+    return`<span class="syn-output">${withBold}</span>`;
+  }).join('\n');
+}
+
+// Smarter highlighter that tracks context (after a # prompt = show output until next prompt)
+function highlightSmart(raw){
+  if(!raw)return'';
+  const lines=raw.split('\n');
+  let inShowOutput=false;
+  return lines.map(line=>{
+    const escaped=escHtml(line);
+    // Apply **bold** first
+    const withBold=escaped.replace(/\*\*(.+?)\*\*/g,'<span class="syn-bold">$1</span>');
+
+    // Empty line
+    if(line.trim()===''){inShowOutput=false;return withBold;}
+
+    // ! comment
+    if(/^\s*!/.test(line))return`<span class="syn-comment">${withBold}</span>`;
+
+    // Prompt line: word(optionalcontext)# or word# — marks start of a command
+    if(/^[A-Za-z0-9_\-]+(\([^)]*\))*#\s/.test(line)||/^[A-Za-z0-9_\-]+(\([^)]*\))*#$/.test(line)){
+      inShowOutput=true; // lines after this prompt are show output until next prompt
+      return`<span class="syn-prompt">${withBold}</span>`;
+    }
+
+    // If we're after a prompt line, this is show output
+    if(inShowOutput){
+      // But if it looks like a config command (no leading spaces, starts with keyword), treat as config
+      if(/^(interface|ip |ipv6|router |access-list|route |nat |object |policy|service|crypto|tunnel|network|subnet|host|range|no |default |permit |deny |class |description|shutdown|bandwidth|logging|snmp|username|password|enable|aaa |ldap|http|ssh|telnet|ftp|ntp|dns|domain|hostname|version|boot|memory|flash|disk|vlan|spanning|port|channel|lacp|vpc|hsrp|vrrp|glbp|ospf|eigrp|bgp|rip|static|set |match |call |dial|isdn|frame|atm|ppp|serial|ethernet|gigabit|fastethernet|tengigabit|management|outside|inside|dmz)/i.test(line.trim())){
+        return`<span class="syn-output">${withBold}</span>`;
+      }
+      return`<span class="syn-output">${withBold}</span>`;
+    }
+
+    // Default: plain text (notes/description content)
+    return withBold;
+  }).join('\n');
+}
+
 /* ── Tree render ── */
 function renderTree(){
   const tree=document.getElementById('tree');
   const q=filterText.toLowerCase();
   tree.innerHTML='';
   function nodeMatches(n){
-    if(isLeaf(n))return!q||n.id.includes(q)||n.title.toLowerCase().includes(q)||(n.commands||'').toLowerCase().includes(q);
+    if(isLeaf(n))return!q||n.id.includes(q)||n.title.toLowerCase().includes(q)||(n.content||'').toLowerCase().includes(q);
     return(n.children||[]).some(c=>nodeMatches(c));
   }
   function buildNode(node,depth){
     if(q&&!nodeMatches(node))return null;
     const leaf=isLeaf(node);
     const isOpen=q?true:openNodes.has(node.id);
-    const isActive=leaf?activePath[activePath.length-1]===node.id:activePath[activePath.length-1]===node.id;
+    const isActive=activePath[activePath.length-1]===node.id;
     const wrap=document.createElement('div');
     wrap.className=`node lvl${depth+1}`+(!leaf&&isOpen?' open':'');
     const btn=document.createElement('button');
     btn.className='node-btn'+(isActive?' active':'');
     if(!leaf){const ch=document.createElement('span');ch.className='chevron';ch.textContent='▶';btn.appendChild(ch);}
-    else{const d=document.createElement('span');d.className='node-dot'+(node.commands||node.images?.length?' filled':'');btn.appendChild(d);}
+    else{const d=document.createElement('span');d.className='node-dot'+(node.content||node.images?.length?' filled':'');btn.appendChild(d);}
     const idS=document.createElement('span');idS.className='node-id';idS.style.fontSize=depth===0?'13px':'12px';idS.textContent=node.id;btn.appendChild(idS);
     const lblS=document.createElement('span');lblS.className='node-label';lblS.style.cssText='font-size:11px;color:var(--hint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';lblS.textContent=node.title;btn.appendChild(lblS);
     if(!leaf){const bg=document.createElement('span');bg.className='node-badge';bg.textContent=countLeaves(node);btn.appendChild(bg);}
@@ -392,107 +463,78 @@ function showFolderView(nodeId){
   const depth=getDepth(nodeId,db.sections);
   activePath=buildBreadcrumbParts(nodeId)?.map(p=>p.id)||[nodeId];
   editingEntryId=null;
-  setBreadcrumb(nodeId);
-  renderTree();
-
+  setBreadcrumb(nodeId);renderTree();
   const childItems=sortNodes(node.children||[]).map(c=>{
     const meta=isLeaf(c)?(c.tags||[]).slice(0,2).join(', ')||'':(`${countLeaves(c)} tasks`);
     return`<div class="child-card" onclick="${isLeaf(c)?`selectEntry('${esc(c.id)}')`:`showFolderView('${esc(c.id)}')`}">
       <span class="c-id">${esc(c.id)}</span><span class="c-title">${esc(c.title)}</span>
       <span class="c-meta">${esc(meta)}</span><span class="c-arrow">›</span></div>`;
   }).join('');
-
   const addBtns=[
     depth===0?`<button class="btn-sm primary desktop-only" onclick="showAddTaskForm('${esc(nodeId)}','subsection')">+ Add subsection</button>`:'',
     depth===1?`<button class="btn-sm primary desktop-only" onclick="showAddTaskForm('${esc(nodeId)}','task')">+ Add task</button>`:'',
     `<button class="btn-sm desktop-only" onclick="showRenameForm('${esc(nodeId)}')">Rename</button>`,
     `<button class="btn-sm danger desktop-only" onclick="deleteNode('${esc(nodeId)}')">Delete</button>`
   ].join('');
-
   document.getElementById('content').innerHTML=`
-    <div class="folder-header">
-      <div class="folder-id">${esc(node.id)}</div>
-      <div class="folder-title-text">${esc(node.title)}</div>
-      <div class="folder-actions">${addBtns}</div>
-    </div>
+    <div class="folder-id">${esc(node.id)}</div>
+    <div class="folder-title-text">${esc(node.title)}</div>
+    <div class="folder-actions">${addBtns}</div>
     <div id="inline-form-area"></div>
-    <div class="children-list">${childItems||'<div style="color:var(--hint);font-size:13px;padding:20px 0;">No items yet. Use the buttons above to add content.</div>'}</div>
-  `;
+    <div class="children-list">${childItems||'<div style="color:var(--hint);font-size:13px;padding:20px 0;">No items yet.</div>'}</div>`;
   document.getElementById('content').scrollTop=0;
 }
 
-/* ── Inline forms for add section / subsection / task ── */
+/* ── Inline forms ── */
 function showAddSectionForm(){
-  // Show inline form at top of content panel
-  const content=document.getElementById('content');
-  content.innerHTML=`
-    <div class="inline-form" id="add-sec-form">
+  document.getElementById('content').innerHTML=`
+    <div class="inline-form">
       <h3>New section</h3>
       <div class="if-row"><label>ID</label><input id="f-nid" placeholder="e.g. 5 or ASA"/></div>
       <div class="if-row"><label>Title</label><input id="f-ntitle" placeholder="Descriptive name"/></div>
-      <div class="if-actions">
-        <button class="if-save" onclick="submitAddNode(null,0)">Add section</button>
-        <button class="if-cancel" onclick="cancelForm()">Cancel</button>
-      </div>
+      <div class="if-actions"><button class="if-save" onclick="submitAddNode(null,0)">Add section</button><button class="if-cancel" onclick="cancelForm()">Cancel</button></div>
     </div>`;
   document.getElementById('breadcrumb').textContent='new section';
   setTimeout(()=>document.getElementById('f-nid')?.focus(),50);
 }
 
 function showAddTaskForm(parentId,type){
-  const area=document.getElementById('inline-form-area');
-  if(!area)return;
-  const label=type==='subsection'?'New subsection':'New task';
+  const area=document.getElementById('inline-form-area');if(!area)return;
   const isTask=type==='task';
   area.innerHTML=`
     <div class="inline-form">
-      <h3>${label}</h3>
+      <h3>${isTask?'New task':'New subsection'}</h3>
       <div class="if-row"><label>ID</label><input id="f-nid" placeholder="e.g. 5.1 or ASA-VPN"/></div>
       <div class="if-row"><label>Title</label><input id="f-ntitle" placeholder="Descriptive name"/></div>
-      ${isTask?`
-      <div class="if-row"><label>Commands</label><textarea id="f-cmds" placeholder="Paste CLI commands here…" rows="4"></textarea></div>
-      <div class="if-row"><label>Notes</label><textarea id="f-notes" placeholder="Context, caveats…" rows="3" style="font-family:var(--sans);"></textarea></div>
-      <div class="if-row"><label>Tags (comma-separated)</label><input id="f-tags" placeholder="vpn, ipsec"/></div>`:''}
-      <div class="if-actions">
-        <button class="if-save" onclick="${isTask?`submitAddTask('${esc(parentId)}')`:`submitAddNode('${esc(parentId)}',1)`}">${isTask?'Add task':'Add subsection'}</button>
-        <button class="if-cancel" onclick="document.getElementById('inline-form-area').innerHTML=''">Cancel</button>
-      </div>
+      <div class="if-actions"><button class="if-save" onclick="${isTask?`submitAddTask('${esc(parentId)}')`:`submitAddNode('${esc(parentId)}',1)`}">${isTask?'Add task':'Add subsection'}</button><button class="if-cancel" onclick="document.getElementById('inline-form-area').innerHTML=''">Cancel</button></div>
     </div>`;
   setTimeout(()=>document.getElementById('f-nid')?.focus(),50);
-  area.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function showRenameForm(nodeId){
   const node=findNode(nodeId,db.sections);if(!node)return;
-  const content=document.getElementById('content');
   const area=document.getElementById('inline-form-area');
-  const target=area||content;
-  const html=`
-    <div class="inline-form" id="rename-form">
+  const target=area||document.getElementById('content');
+  target.innerHTML=`
+    <div class="inline-form">
       <h3>Rename <span style="font-family:var(--mono);color:var(--accent-text)">${esc(node.id)}</span></h3>
       <div class="if-row"><label>Title</label><input id="f-ntitle" value="${esc(node.title)}"/></div>
-      <div class="if-actions">
-        <button class="if-save" onclick="submitRename('${esc(nodeId)}')">Save</button>
-        <button class="if-cancel" onclick="showFolderView('${esc(nodeId)}')">Cancel</button>
-      </div>
+      <div class="if-actions"><button class="if-save" onclick="submitRename('${esc(nodeId)}')">Save</button><button class="if-cancel" onclick="showFolderView('${esc(nodeId)}')">Cancel</button></div>
     </div>`;
-  if(area){area.innerHTML=html;}
-  else{content.innerHTML=html;}
   setTimeout(()=>document.getElementById('f-ntitle')?.focus(),50);
 }
 
 function cancelForm(){
-  // Go back to welcome
   document.getElementById('content').innerHTML=`<div id="welcome"><div class="wicon">⌨</div><p>Select a task from the sidebar or add a new section.</p></div>`;
   document.getElementById('breadcrumb').textContent='select a task';
 }
 
-/* ── Submit section/subsection ── */
+/* ── Submit ── */
 function submitAddNode(parentId,depth){
   const id=document.getElementById('f-nid').value.trim();
   const title=document.getElementById('f-ntitle').value.trim();
   if(!id){showToast('ID is required');document.getElementById('f-nid').focus();return;}
-  if(findNode(id,db.sections)){showToast('That ID already exists.');document.getElementById('f-nid').focus();return;}
+  if(findNode(id,db.sections)){showToast('That ID already exists.');return;}
   if(title&&allTitles().includes(title.toLowerCase())){showToast(`"${title}" is already used.`);return;}
   const now=new Date().toISOString();
   const newNode={id,title:title||id,children:[],createdAt:now,updatedAt:now};
@@ -503,20 +545,16 @@ function submitAddNode(parentId,depth){
   renderTree();showFolderView(id);
 }
 
-/* ── Submit task ── */
 function submitAddTask(parentId){
   const id=document.getElementById('f-nid').value.trim();
   const title=document.getElementById('f-ntitle').value.trim();
   if(!id){showToast('ID is required');document.getElementById('f-nid').focus();return;}
-  if(findNode(id,db.sections)){showToast('That ID already exists.');document.getElementById('f-nid').focus();return;}
+  if(findNode(id,db.sections)){showToast('That ID already exists.');return;}
   if(title&&allTitles().includes(title.toLowerCase())){showToast(`"${title}" is already used.`);return;}
   const now=new Date().toISOString();
   const parent=findNode(parentId,db.sections);if(!parent)return;
-  const entry={id,title:title||id,
-    commands:(document.getElementById('f-cmds')?.value||'').trim(),
-    notes:(document.getElementById('f-notes')?.value||'').trim(),
-    tags:(document.getElementById('f-tags')?.value||'').split(',').map(t=>t.trim()).filter(Boolean),
-    images:[],createdAt:now,updatedAt:now};
+  // New unified model: single 'content' field + tags + images
+  const entry={id,title:title||id,content:'',tags:[],images:[],createdAt:now,updatedAt:now};
   if(!parent.children)parent.children=[];
   parent.children.push(entry);
   persist();openNodes.add(parentId);
@@ -524,32 +562,43 @@ function submitAddTask(parentId){
   renderTree();selectEntry(id);
 }
 
-/* ── Submit rename ── */
 function submitRename(nodeId){
   const node=findNode(nodeId,db.sections);if(!node)return;
   const newTitle=document.getElementById('f-ntitle').value.trim();
   if(newTitle&&newTitle.toLowerCase()!==node.title.toLowerCase()&&allTitles(nodeId).includes(newTitle.toLowerCase())){showToast(`"${newTitle}" is already used.`);return;}
-  node.title=newTitle||node.title;
-  node.updatedAt=new Date().toISOString();
+  node.title=newTitle||node.title;node.updatedAt=new Date().toISOString();
   persist();renderTree();showFolderView(nodeId);
+}
+
+/* ── Migration: old entries (commands+notes) → new unified content ── */
+function migrateEntry(entry){
+  if(entry.content!==undefined)return entry; // already migrated
+  const parts=[];
+  if(entry.commands&&entry.commands.trim())parts.push(entry.commands.trim());
+  if(entry.notes&&entry.notes.trim()){if(parts.length)parts.push('');parts.push(entry.notes.trim());}
+  entry.content=parts.join('\n');
+  delete entry.commands;delete entry.notes;
+  return entry;
 }
 
 /* ── Select entry ── */
 function selectEntry(entryId){
   const node=findNode(entryId,db.sections);if(!node)return;
+  migrateEntry(node);
   activePath=buildBreadcrumbParts(entryId).map(p=>p.id);
   openNodes.add(activePath[0]);if(activePath[1])openNodes.add(activePath[1]);
   editingEntryId=null;
   renderTree();renderEntryView(entryId);
 }
 
-/* ── Entry VIEW mode ── */
+/* ── Entry VIEW ── */
 function renderEntryView(entryId){
   const entry=findNode(entryId,db.sections);if(!entry)return;
+  migrateEntry(entry);
   setBreadcrumb(entryId);
-  const hasCmds=entry.commands?.trim();
-  const hasNotes=entry.notes?.trim();
   const imgs=entry.images||[];
+  const highlighted=highlightSmart(entry.content||'');
+  // Extract plain commands for copy (lines with # prompt or config lines)
   document.getElementById('content').innerHTML=`
     <div class="entry-topbar">
       <div class="entry-meta">
@@ -562,76 +611,125 @@ function renderEntryView(entryId){
       </div>
     </div>
     ${(entry.tags||[]).length?`<div class="tags-row">${entry.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
-    ${hasCmds?`<div class="field-label">Commands</div><div class="cmd-block">${esc(entry.commands)}<button class="copy-btn" onclick="copyCmd('${esc(entryId)}',this)">copy</button></div>`:''}
-    ${hasNotes?`<div class="field-label">Notes</div><div class="notes-block">${esc(entry.notes)}</div>`:''}
+    ${entry.content?.trim()?`
+      <div class="content-block">
+        <div class="content-block-inner">${highlighted}</div>
+        <div class="copy-bar">
+          <span>Commands &amp; Notes</span>
+          <button class="copy-btn" onclick="copyContent('${esc(entryId)}',this)">Copy all</button>
+        </div>
+      </div>`:''}
     <div class="images-section">
       <div class="field-label">Diagrams / Images</div>
       <div class="img-grid">${imgs.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del desktop-only" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('')}</div>
       <div class="img-drop-zone desktop-only" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'${esc(entryId)}')">
         <input type="file" accept="image/*" multiple onchange="handleFileInput(event,'${esc(entryId)}')"/>
-        <div>📎 Drop images here or click to upload</div>
-        <div class="img-caption">PNG · JPG · SVG · WEBP — or paste from clipboard (Ctrl+V)</div>
+        <div>📎 Drop images here, click to upload, or press Ctrl+V to paste</div>
+        <div class="img-caption">PNG · JPG · SVG · WEBP</div>
       </div>
     </div>
-    ${!hasCmds&&!hasNotes&&!imgs.length?'<div style="color:var(--hint);font-size:13px;padding:20px 0;">No content yet. Click Edit to add commands and notes.</div>':''}
+    ${!entry.content?.trim()&&!imgs.length?'<div style="color:var(--hint);font-size:13px;padding:20px 0;">No content yet. Click Edit to start writing.</div>':''}
   `;
   document.getElementById('content').scrollTop=0;
 }
 
-/* ── Entry EDITOR mode (inline, full-width, no popup) ── */
+/* ── Entry EDITOR ── */
 function renderEntryEditor(entryId){
   const entry=findNode(entryId,db.sections);if(!entry)return;
+  migrateEntry(entry);
   editingEntryId=entryId;
   setBreadcrumb(entryId);
   const imgs=entry.images||[];
+
+  // Check for draft backup
+  const draft=loadDraft(entryId);
+  const hasDraft=draft&&draft.ts>( (entry.updatedAt?new Date(entry.updatedAt).getTime():0));
+  const contentToShow=hasDraft?draft.content:(entry.content||'');
+  const tagsToShow=hasDraft?draft.tags:((entry.tags||[]).join(', '));
+  const titleToShow=hasDraft?draft.title:(entry.title||'');
+
   document.getElementById('content').innerHTML=`
     <div class="entry-editor">
+      ${hasDraft?`<div style="background:var(--accent-dim);border:0.5px solid var(--accent);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--accent-text);">
+        ⚠ A draft was recovered from your last session. It has been restored below.
+        <button onclick="clearDraft('${esc(entryId)}');renderEntryEditor('${esc(entryId)}')" style="margin-left:12px;background:none;border:0.5px solid var(--accent);border-radius:var(--radius);color:var(--accent-text);cursor:pointer;font-size:11px;padding:2px 8px;">Discard draft</button>
+      </div>`:''}
       <div class="ee-row">
         <div class="ee-label">Title</div>
-        <input class="ee-input" id="ee-title" value="${esc(entry.title)}" placeholder="Task title"/>
+        <input class="ee-input" id="ee-title" value="${esc(titleToShow)}" placeholder="Task title"/>
       </div>
       <div class="ee-row">
-        <div class="ee-label">Commands <span style="color:var(--hint);font-size:10px;font-weight:400;">(one per line)</span></div>
-        <textarea class="ee-textarea" id="ee-cmds" placeholder="Paste or type CLI commands here…" rows="8">${esc(entry.commands||'')}</textarea>
+        <div class="ee-label">
+          Content
+          <span class="ee-hint">— mix commands, show output, and notes freely · use **bold** · lines with # are highlighted as prompts · ! lines are comments</span>
+        </div>
+        <textarea class="ee-unified" id="ee-content" placeholder="Type or paste commands, show output, notes — everything goes here…
+
+Example:
+ASA(config)# show run nat
+nat (inside,outside) source dynamic o-net interface
+!
+**Note:** Configure NAT before applying ACL.
+ASA(config)#">${esc(contentToShow)}</textarea>
       </div>
       <div class="ee-row">
-        <div class="ee-label">Notes</div>
-        <textarea class="ee-textarea ee-notes" id="ee-notes" placeholder="Context, caveats, gotchas, task description…" rows="6">${esc(entry.notes||'')}</textarea>
-      </div>
-      <div class="ee-row">
-        <div class="ee-label">Tags <span style="color:var(--hint);font-size:10px;font-weight:400;">(comma-separated)</span></div>
-        <input class="ee-input ee-tags-input" id="ee-tags" value="${esc((entry.tags||[]).join(', '))}" placeholder="vpn, ipsec, phase1"/>
+        <div class="ee-label">Tags <span class="ee-hint">(comma-separated)</span></div>
+        <input class="ee-input ee-tags-input" id="ee-tags" value="${esc(tagsToShow)}" placeholder="vpn, ipsec, nat"/>
       </div>
       <div class="images-section">
-        <div class="ee-label">Diagrams / Images</div>
+        <div class="ee-label">Diagrams / Images <span class="ee-hint">— paste Ctrl+V, drag &amp; drop, or upload</span></div>
         <div class="img-grid" id="img-grid-${esc(entryId)}">${imgs.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('')}</div>
-        <div class="img-drop-zone" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'${esc(entryId)}')">
+        <div class="img-drop-zone" id="img-drop-${esc(entryId)}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'${esc(entryId)}')">
           <input type="file" accept="image/*" multiple onchange="handleFileInput(event,'${esc(entryId)}')"/>
           <div>📎 Drop images here or click to upload</div>
-          <div class="img-caption">PNG · JPG · SVG · WEBP — or paste from clipboard (Ctrl+V)</div>
+          <div class="img-caption">PNG · JPG · SVG · WEBP · paste with Ctrl+V</div>
         </div>
       </div>
-      <div class="ee-save-bar">
+      <div class="autosave-bar">
         <button class="ee-save-btn" onclick="submitEditEntry('${esc(entryId)}')">Save</button>
-        <button class="ee-discard-btn" onclick="renderEntryView('${esc(entryId)}')">Discard</button>
-        <span class="ee-autosave-hint">Changes are saved when you click Save</span>
+        <button class="ee-discard-btn" onclick="discardEdit('${esc(entryId)}')">Discard</button>
+        <span class="autosave-hint" id="autosave-hint">Draft auto-saved locally</span>
       </div>
-    </div>
-  `;
+    </div>`;
+
   document.getElementById('content').scrollTop=0;
+
+  // Auto-grow textarea
+  const ta=document.getElementById('ee-content');
+  function autoGrow(){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}
+  ta.addEventListener('input',autoGrow);
+  setTimeout(autoGrow,10);
+
+  // Auto-save draft every 5 seconds while typing
+  ta.addEventListener('input',()=>{
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer=setTimeout(()=>{
+      const hint=document.getElementById('autosave-hint');
+      saveDraft(entryId,ta.value,document.getElementById('ee-tags')?.value||'',document.getElementById('ee-title')?.value||'');
+      if(hint){hint.textContent='Draft saved locally ✓';hint.className='autosave-hint saved';}
+      setTimeout(()=>{if(hint){hint.textContent='Draft auto-saved locally';hint.className='autosave-hint';}},2000);
+    },3000);
+  });
+
   document.getElementById('ee-title')?.focus();
 }
 
-/* ── Save edited entry ── */
+function discardEdit(entryId){
+  clearDraft(entryId);
+  editingEntryId=null;
+  renderEntryView(entryId);
+}
+
+/* ── Save entry ── */
 function submitEditEntry(entryId){
   const entry=findNode(entryId,db.sections);if(!entry)return;
   const newTitle=document.getElementById('ee-title').value.trim();
   if(newTitle&&newTitle.toLowerCase()!==entry.title.toLowerCase()&&allTitles(entryId).includes(newTitle.toLowerCase())){showToast(`"${newTitle}" is already used.`);return;}
   entry.title=newTitle||entry.title;
-  entry.commands=document.getElementById('ee-cmds').value.trim();
-  entry.notes=document.getElementById('ee-notes').value.trim();
+  entry.content=document.getElementById('ee-content').value;
   entry.tags=document.getElementById('ee-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
   entry.updatedAt=new Date().toISOString();
+  clearDraft(entryId);
   editingEntryId=null;
   persist();renderTree();renderEntryView(entryId);showToast('Saved ✓');
 }
@@ -647,14 +745,46 @@ function deleteNode(nodeId){
   document.getElementById('breadcrumb').textContent='select a task';
 }
 
-/* ── Copy commands ── */
-function copyCmd(entryId,btn){
-  const entry=findNode(entryId,db.sections);if(!entry?.commands)return;
-  navigator.clipboard.writeText(entry.commands).then(()=>{btn.textContent='copied ✓';btn.style.color='var(--success)';setTimeout(()=>{btn.textContent='copy';btn.style.color='';},2000);})
-  .catch(()=>{const ta=document.createElement('textarea');ta.value=entry.commands;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied ✓');});
+/* ── Copy content ── */
+function copyContent(entryId,btn){
+  const entry=findNode(entryId,db.sections);if(!entry?.content)return;
+  navigator.clipboard.writeText(entry.content).then(()=>{
+    btn.textContent='Copied ✓';btn.style.color='var(--success)';
+    setTimeout(()=>{btn.textContent='Copy all';btn.style.color='';},2000);
+  }).catch(()=>{const ta=document.createElement('textarea');ta.value=entry.content;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied ✓');});
 }
 
-/* ── Images ── */
+/* ── Images — paste goes to image section, never to textarea ── */
+document.addEventListener('paste',e=>{
+  const entryId=activePath[activePath.length-1];if(!entryId)return;
+  const entry=findNode(entryId,db.sections);if(!entry||!isLeaf(entry))return;
+  const items=Array.from(e.clipboardData.items).filter(it=>it.type.startsWith('image/'));
+  if(!items.length)return;
+  // Always intercept image pastes — prevent them going into any textarea
+  e.preventDefault();
+  e.stopPropagation();
+  if(!entry.images)entry.images=[];
+  let pending=items.length;
+  items.forEach(item=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      entry.images.push({name:`pasted-${Date.now()}.png`,data:ev.target.result});
+      if(--pending===0){
+        persist();
+        // Refresh image grid without losing textarea content
+        if(editingEntryId===entryId){
+          const grid=document.getElementById(`img-grid-${entryId}`);
+          if(grid){
+            grid.innerHTML=entry.images.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('');
+          }
+        }else{renderEntryView(entryId);}
+        showToast('Image pasted ✓');
+      }
+    };
+    reader.readAsDataURL(item.getAsFile());
+  });
+},true); // capture phase — fires before textarea gets it
+
 function handleDrop(e,entryId){e.preventDefault();e.currentTarget.classList.remove('drag-over');processImages(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),entryId);}
 function handleFileInput(e,entryId){processImages(Array.from(e.target.files),entryId);}
 function processImages(files,entryId){
@@ -663,12 +793,17 @@ function processImages(files,entryId){
   let pending=files.length;
   files.forEach(file=>{
     const reader=new FileReader();
-    reader.onload=ev=>{entry.images.push({name:file.name,data:ev.target.result});
-      if(--pending===0){persist();
-        // refresh image grid without losing editor state
-        if(editingEntryId===entryId) renderEntryEditor(entryId);
-        else renderEntryView(entryId);
-        showToast('Image saved ✓');}};
+    reader.onload=ev=>{
+      entry.images.push({name:file.name,data:ev.target.result});
+      if(--pending===0){
+        persist();
+        if(editingEntryId===entryId){
+          const grid=document.getElementById(`img-grid-${entryId}`);
+          if(grid)grid.innerHTML=entry.images.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('');
+        }else{renderEntryView(entryId);}
+        showToast('Image saved ✓');
+      }
+    };
     reader.readAsDataURL(file);
   });
 }
@@ -676,27 +811,18 @@ function deleteImage(entryId,idx){
   if(!confirm('Remove this image?'))return;
   const entry=findNode(entryId,db.sections);if(!entry?.images)return;
   entry.images.splice(idx,1);persist();
-  if(editingEntryId===entryId)renderEntryEditor(entryId);else renderEntryView(entryId);
+  if(editingEntryId===entryId){
+    const grid=document.getElementById(`img-grid-${entryId}`);
+    if(grid)grid.innerHTML=entry.images.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('');
+  }else{renderEntryView(entryId);}
 }
-
-/* ── Paste images ── */
-document.addEventListener('paste',e=>{
-  const entryId=activePath[activePath.length-1];if(!entryId)return;
-  const entry=findNode(entryId,db.sections);if(!entry||!isLeaf(entry))return;
-  const items=Array.from(e.clipboardData.items).filter(it=>it.type.startsWith('image/'));if(!items.length)return;
-  if(!entry.images)entry.images=[];
-  let pending=items.length;
-  items.forEach(item=>{const reader=new FileReader();reader.onload=ev=>{entry.images.push({name:`pasted-${Date.now()}.png`,data:ev.target.result});if(--pending===0){persist();if(editingEntryId===entryId)renderEntryEditor(entryId);else renderEntryView(entryId);showToast('Image pasted ✓');}};reader.readAsDataURL(item.getAsFile());});
-});
 
 /* ── Lightbox ── */
 function openLightbox(entryId,idx){const img=findNode(entryId,db.sections)?.images?.[idx];if(!img)return;document.getElementById('lightbox-img').src=img.data;document.getElementById('lightbox').classList.add('open');}
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
 
-/* ── Search ── */
+/* ── Search / Sidebar ── */
 function filterTree(q){filterText=q;renderTree();}
-
-/* ── Sidebar ── */
 function toggleSidebar(){const sb=document.getElementById('sidebar'),ov=document.getElementById('sidebar-overlay');const o=sb.classList.toggle('open');ov.classList.toggle('open',o);}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('open');}
 
@@ -721,9 +847,10 @@ function handleImport(e){
   reader.readAsText(file);e.target.value='';
 }
 
-/* ── Toast ── */
+/* ── Helpers ── */
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 /* ── Boot ── */
 (async()=>{
