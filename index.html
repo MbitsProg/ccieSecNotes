@@ -1,192 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="theme-color" content="#0f1117" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0f1117"/>
 <title>cmdref</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0f1117; --surface: #161a24; --card: #1c2130; --card2: #212636;
-  --border: rgba(255,255,255,0.07); --border-em: rgba(255,255,255,0.13);
-  --text: #e8eaf0; --muted: #8b90a0; --hint: #555b6e;
-  --accent: #e09840; --accent-dim: rgba(224,152,64,0.12); --accent-text: #f0b860;
-  --tag-bg: rgba(55,138,221,0.15); --tag-text: #7db8f0;
-  --danger: #e24b4a; --success: #4caf7d;
-  --mono: 'Cascadia Code','Fira Code','Consolas',monospace;
-  --sans: 'Segoe UI',system-ui,sans-serif;
-  --radius: 8px; --radius-lg: 12px; --nav-h: 52px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f1117;--surface:#161a24;--card:#1c2130;--card2:#212636;
+  --border:rgba(255,255,255,0.07);--border-em:rgba(255,255,255,0.13);
+  --text:#e8eaf0;--muted:#8b90a0;--hint:#555b6e;
+  --accent:#e09840;--accent-dim:rgba(224,152,64,0.12);--accent-text:#f0b860;
+  --tag-bg:rgba(55,138,221,0.15);--tag-text:#7db8f0;
+  --danger:#e24b4a;--success:#4caf7d;
+  --mono:'Cascadia Code','Fira Code','Consolas',monospace;
+  --sans:'Segoe UI',system-ui,sans-serif;
+  --radius:8px;--radius-lg:12px;--nav-h:52px;
 }
-html, body { height: 100%; overflow: hidden; }
-body { font-family: var(--sans); background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
 
-/* nav */
-#topnav { height: var(--nav-h); flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 0.5px solid var(--border); background: var(--surface); position: relative; z-index: 50; }
-#hamburger { display: none; border: none; background: none; cursor: pointer; color: var(--muted); font-size: 20px; padding: 4px 6px; line-height: 1; }
-.logo { font-family: var(--mono); font-size: 14px; color: var(--accent); font-weight: 600; letter-spacing: 0.05em; }
-.tagline { font-size: 11px; color: var(--hint); }
-.spacer { flex: 1; }
-.nav-btn { padding: 5px 11px; border-radius: var(--radius); border: 0.5px solid var(--border-em); background: transparent; cursor: pointer; font-size: 11px; color: var(--muted); font-family: var(--sans); white-space: nowrap; }
-.nav-btn:hover { color: var(--accent); border-color: var(--accent); }
-#sync-status { font-size: 10px; color: var(--hint); display: flex; align-items: center; gap: 5px; }
-#sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--hint); flex-shrink: 0; }
-#sync-dot.ok { background: var(--success); }
-#sync-dot.saving { background: var(--accent); }
-#sync-dot.err { background: var(--danger); }
+/* ── Nav ── */
+#topnav{height:var(--nav-h);flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:0.5px solid var(--border);background:var(--surface);z-index:50;}
+#hamburger{display:none;border:none;background:none;cursor:pointer;color:var(--muted);font-size:20px;padding:4px 6px;line-height:1;}
+.logo{font-family:var(--mono);font-size:14px;color:var(--accent);font-weight:600;letter-spacing:0.05em;}
+.tagline{font-size:11px;color:var(--hint);}
+.spacer{flex:1;}
+.nav-btn{padding:5px 11px;border-radius:var(--radius);border:0.5px solid var(--border-em);background:transparent;cursor:pointer;font-size:11px;color:var(--muted);font-family:var(--sans);white-space:nowrap;}
+.nav-btn:hover{color:var(--accent);border-color:var(--accent);}
+#sync-status{font-size:10px;color:var(--hint);display:flex;align-items:center;gap:5px;}
+#sync-dot{width:6px;height:6px;border-radius:50%;background:var(--hint);flex-shrink:0;}
+#sync-dot.ok{background:var(--success);}
+#sync-dot.saving{background:var(--accent);}
+#sync-dot.err{background:var(--danger);}
 
-/* layout */
-#layout { display: flex; flex: 1; overflow: hidden; position: relative; }
+/* ── Layout ── */
+#layout{display:flex;flex:1;overflow:hidden;position:relative;}
 
-/* sidebar */
-#sidebar { width: 280px; flex-shrink: 0; border-right: 0.5px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; transition: transform 0.25s ease; }
-#search-wrap { padding: 10px 12px; border-bottom: 0.5px solid var(--border); }
-#search { width: 100%; padding: 8px 10px; border: 0.5px solid var(--border-em); border-radius: var(--radius); background: var(--card); color: var(--text); font-size: 13px; font-family: var(--sans); outline: none; }
-#search:focus { border-color: var(--accent); }
-#tree { flex: 1; overflow-y: auto; padding: 4px 0; -webkit-overflow-scrolling: touch; }
-#tree::-webkit-scrollbar { width: 3px; }
-#tree::-webkit-scrollbar-thumb { background: var(--border-em); border-radius: 2px; }
+/* ── Sidebar ── */
+#sidebar{width:280px;flex-shrink:0;border-right:0.5px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s ease;}
+#search-wrap{padding:10px 12px;border-bottom:0.5px solid var(--border);}
+#search{width:100%;padding:8px 10px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--card);color:var(--text);font-size:13px;font-family:var(--sans);outline:none;}
+#search:focus{border-color:var(--accent);}
+#sort-bar{padding:5px 12px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+#sort-bar label{font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
+.sort-btn{border:0.5px solid var(--border);border-radius:var(--radius);background:none;cursor:pointer;font-size:10px;color:var(--hint);padding:3px 7px;font-family:var(--sans);white-space:nowrap;}
+.sort-btn:hover{color:var(--accent);border-color:var(--accent);}
+.sort-btn.active{color:var(--accent-text);border-color:var(--accent);background:var(--accent-dim);}
+#tree{flex:1;overflow-y:auto;padding:4px 0;-webkit-overflow-scrolling:touch;}
+#tree::-webkit-scrollbar{width:3px;}
+#tree::-webkit-scrollbar-thumb{background:var(--border-em);border-radius:2px;}
+.node-btn{width:100%;text-align:left;border:none;background:none;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text);transition:background .1s;}
+.node-btn:hover{background:var(--card);}
+.node-btn.active{background:var(--accent-dim);color:var(--accent-text);}
+.chevron{font-size:9px;color:var(--hint);transition:transform .15s;display:inline-block;flex-shrink:0;}
+.open>.node-btn .chevron{transform:rotate(90deg);}
+.node-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.node-id{font-family:var(--mono);flex-shrink:0;}
+.node-badge{font-size:10px;background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:1px 5px;color:var(--hint);flex-shrink:0;margin-left:auto;}
+.node-dot{width:5px;height:5px;border-radius:50%;background:var(--hint);flex-shrink:0;}
+.node-dot.filled{background:var(--accent);}
+.lvl1>.node-btn{padding:8px 14px;font-size:13px;font-weight:500;}
+.lvl1-children{display:none;}
+.lvl1.open>.lvl1-children{display:block;}
+.lvl2>.node-btn{padding:6px 14px 6px 26px;font-size:12px;}
+.lvl2-children{display:none;}
+.lvl2.open>.lvl2-children{display:block;}
+.lvl3>.node-btn{padding:5px 14px 5px 40px;font-size:12px;color:var(--muted);}
+.lvl3>.node-btn.active{color:var(--accent-text);}
+#sidebar-actions{border-top:0.5px solid var(--border);}
+.btn-add-sec{width:100%;text-align:left;border:none;background:none;cursor:pointer;padding:10px 14px;font-size:12px;color:var(--hint);display:flex;align-items:center;gap:6px;}
+.btn-add-sec:hover{color:var(--accent);}
+#sidebar-footer{padding:7px 14px;border-top:0.5px solid var(--border);font-size:10px;color:var(--hint);}
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:30;}
 
-.node-btn { width: 100%; text-align: left; border: none; background: none; cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--text); transition: background .1s; }
-.node-btn:hover { background: var(--card); }
-.node-btn.active { background: var(--accent-dim); color: var(--accent-text); }
-.chevron { font-size: 9px; color: var(--hint); transition: transform .15s; display: inline-block; flex-shrink: 0; }
-.open > .node-btn .chevron { transform: rotate(90deg); }
-.node-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.node-id { font-family: var(--mono); flex-shrink: 0; }
-.node-badge { font-size: 10px; background: var(--card2); border: 0.5px solid var(--border); border-radius: 10px; padding: 1px 5px; color: var(--hint); flex-shrink: 0; margin-left: auto; }
-.node-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--hint); flex-shrink: 0; }
-.node-dot.filled { background: var(--accent); }
-.lvl1 > .node-btn { padding: 8px 14px; font-size: 13px; font-weight: 500; }
-.lvl1-children { display: none; }
-.lvl1.open > .lvl1-children { display: block; }
-.lvl2 > .node-btn { padding: 6px 14px 6px 26px; font-size: 12px; }
-.lvl2-children { display: none; }
-.lvl2.open > .lvl2-children { display: block; }
-.lvl3 > .node-btn { padding: 5px 14px 5px 40px; font-size: 12px; color: var(--muted); }
-.lvl3 > .node-btn.active { color: var(--accent-text); }
-.btn-add-sec { width: 100%; text-align: left; border: none; background: none; cursor: pointer; padding: 10px 14px; font-size: 12px; color: var(--hint); display: flex; align-items: center; gap: 6px; border-top: 0.5px solid var(--border); }
-.btn-add-sec:hover { color: var(--accent); }
-#sidebar-footer { padding: 7px 14px; border-top: 0.5px solid var(--border); font-size: 10px; color: var(--hint); }
-#sort-bar { padding: 6px 12px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-#sort-bar label { font-size: 10px; color: var(--hint); text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; }
-.sort-btn { border: 0.5px solid var(--border); border-radius: var(--radius); background: none; cursor: pointer; font-size: 10px; color: var(--hint); padding: 3px 7px; font-family: var(--sans); white-space: nowrap; }
-.sort-btn:hover { color: var(--accent); border-color: var(--accent); }
-.sort-btn.active { color: var(--accent-text); border-color: var(--accent); background: var(--accent-dim); }
-#sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 30; }
+/* ── Main ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#breadbar{padding:9px 16px;border-bottom:0.5px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;flex-shrink:0;min-height:44px;}
+#breadcrumb{font-size:12px;color:var(--hint);flex:1;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#breadcrumb .hi{color:var(--accent-text);}
+.desktop-only{display:inline-flex;}
+#content{flex:1;overflow-y:auto;padding:28px 32px;-webkit-overflow-scrolling:touch;}
+#content::-webkit-scrollbar{width:4px;}
+#content::-webkit-scrollbar-thumb{background:var(--border-em);border-radius:3px;}
 
-/* main */
-#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-#breadbar { padding: 9px 16px; border-bottom: 0.5px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 10px; flex-shrink: 0; min-height: 44px; }
-#breadcrumb { font-size: 12px; color: var(--hint); flex: 1; font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#breadcrumb .hi { color: var(--accent-text); }
-.desktop-only { display: inline-flex; }
-#btn-add-entry { padding: 6px 14px; border-radius: var(--radius); border: 0.5px solid var(--accent); background: var(--accent-dim); cursor: pointer; font-size: 12px; color: var(--accent-text); font-family: var(--sans); display: none; white-space: nowrap; flex-shrink: 0; }
-#btn-add-entry:hover { background: rgba(224,152,64,0.22); }
-#content { flex: 1; overflow-y: auto; padding: 20px 20px; -webkit-overflow-scrolling: touch; }
-#content::-webkit-scrollbar { width: 4px; }
-#content::-webkit-scrollbar-thumb { background: var(--border-em); border-radius: 3px; }
+/* ── Loading ── */
+#loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:200;}
+#loading-screen .l-logo{font-family:var(--mono);font-size:20px;color:var(--accent);font-weight:600;}
+#loading-screen .l-msg{font-size:12px;color:var(--hint);}
+.spinner{width:20px;height:20px;border:2px solid var(--border-em);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-/* welcome */
-#welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 14px; opacity: 0.4; }
-#welcome .wicon { font-size: 36px; }
-#welcome p { font-size: 13px; color: var(--muted); text-align: center; max-width: 260px; line-height: 1.6; }
+/* ── Welcome ── */
+#welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;opacity:0.4;}
+#welcome .wicon{font-size:36px;}
+#welcome p{font-size:13px;color:var(--muted);text-align:center;max-width:260px;line-height:1.6;}
 
-/* loading screen */
-#loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 200; }
-#loading-screen .l-logo { font-family: var(--mono); font-size: 20px; color: var(--accent); font-weight: 600; }
-#loading-screen .l-msg { font-size: 12px; color: var(--hint); }
-.spinner { width: 20px; height: 20px; border: 2px solid var(--border-em); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+/* ── Folder view ── */
+.folder-header{margin-bottom:24px;}
+.folder-id{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--accent-text);margin-bottom:2px;}
+.folder-title-text{font-size:14px;color:var(--muted);margin-bottom:16px;}
+.folder-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;}
+.children-list{display:flex;flex-direction:column;gap:6px;}
+.child-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:13px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;}
+.child-card:hover{border-color:var(--border-em);}
+.child-card .c-id{font-family:var(--mono);font-size:13px;color:var(--accent-text);flex-shrink:0;min-width:64px;}
+.child-card .c-title{font-size:13px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.child-card .c-meta{font-size:11px;color:var(--hint);flex-shrink:0;}
+.child-card .c-arrow{color:var(--hint);font-size:13px;flex-shrink:0;}
 
-/* folder */
-.folder-title { font-family: var(--mono); font-size: 20px; font-weight: 600; color: var(--accent-text); margin-bottom: 4px; }
-.folder-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-.folder-actions { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
-.children-list { display: flex; flex-direction: column; gap: 6px; }
-.child-card { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: border-color .15s; }
-.child-card:hover { border-color: var(--border-em); }
-.child-card .c-id { font-family: var(--mono); font-size: 13px; color: var(--accent-text); flex-shrink: 0; min-width: 60px; }
-.child-card .c-title { font-size: 13px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.child-card .c-meta { font-size: 11px; color: var(--hint); flex-shrink: 0; }
-.child-card .c-arrow { color: var(--hint); font-size: 12px; flex-shrink: 0; }
+/* ── Inline form (new section / new task inside folder view) ── */
+.inline-form{background:var(--card);border:0.5px solid var(--accent);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:20px;}
+.inline-form h3{font-size:13px;font-weight:500;color:var(--accent-text);margin-bottom:16px;}
+.if-row{margin-bottom:12px;}
+.if-row label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--hint);margin-bottom:5px;}
+.if-row input,.if-row textarea{width:100%;padding:9px 12px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:13px;font-family:var(--sans);outline:none;}
+.if-row textarea{font-family:var(--mono);resize:vertical;line-height:1.65;}
+.if-row input:focus,.if-row textarea:focus{border-color:var(--accent);}
+.if-actions{display:flex;gap:8px;margin-top:16px;}
+.if-save{padding:8px 20px;border-radius:var(--radius);border:none;background:var(--accent);cursor:pointer;font-size:13px;color:#1a1200;font-family:var(--sans);font-weight:600;}
+.if-save:hover{opacity:0.9;}
+.if-cancel{padding:8px 16px;border-radius:var(--radius);border:0.5px solid var(--border-em);background:transparent;cursor:pointer;font-size:13px;color:var(--muted);font-family:var(--sans);}
+.if-cancel:hover{color:var(--text);}
 
-/* entry */
-.entry-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
-.entry-id { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--accent-text); }
-.entry-title-disp { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
-.entry-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-.btn-sm { padding: 6px 12px; border-radius: var(--radius); border: 0.5px solid var(--border-em); background: var(--card); cursor: pointer; font-size: 12px; color: var(--muted); font-family: var(--sans); }
-.btn-sm:hover { color: var(--text); }
-.btn-sm.danger:hover { color: var(--danger); border-color: var(--danger); }
-.btn-sm.primary { color: var(--accent-text); border-color: var(--accent); background: var(--accent-dim); }
-.btn-sm.primary:hover { background: rgba(224,152,64,0.22); }
-.field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--hint); margin-bottom: 7px; }
-.cmd-block { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 18px; font-family: var(--mono); font-size: 13px; line-height: 1.75; white-space: pre-wrap; word-break: break-all; color: var(--accent-text); position: relative; }
-.copy-btn { position: absolute; top: 8px; right: 8px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--card2); cursor: pointer; font-size: 11px; color: var(--hint); padding: 4px 10px; font-family: var(--sans); }
-.copy-btn:hover { color: var(--accent-text); border-color: var(--accent); }
-.notes-block { background: var(--card); border: 0.5px solid var(--border); border-left: 2px solid var(--accent); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; line-height: 1.75; color: var(--text); white-space: pre-wrap; margin-bottom: 18px; }
-.tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
-.tag { background: var(--tag-bg); color: var(--tag-text); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+/* ── Entry view ── */
+.entry-topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
+.entry-meta{min-width:0;}
+.entry-id{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--accent-text);}
+.entry-title-disp{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.entry-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+.btn-sm{padding:6px 12px;border-radius:var(--radius);border:0.5px solid var(--border-em);background:var(--card);cursor:pointer;font-size:12px;color:var(--muted);font-family:var(--sans);}
+.btn-sm:hover{color:var(--text);}
+.btn-sm.danger:hover{color:var(--danger);border-color:var(--danger);}
+.btn-sm.primary{color:var(--accent-text);border-color:var(--accent);background:var(--accent-dim);}
+.btn-sm.primary:hover{background:rgba(224,152,64,0.22);}
 
-/* images */
-.images-section { margin-bottom: 18px; }
-.img-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
-.img-thumb { position: relative; border-radius: var(--radius); border: 0.5px solid var(--border); overflow: hidden; cursor: zoom-in; }
-.img-thumb img { display: block; max-width: min(280px, 100%); max-height: 200px; object-fit: cover; }
-.img-del { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.75); border: none; border-radius: var(--radius); cursor: pointer; font-size: 11px; color: #fff; padding: 3px 8px; display: none; }
-.img-thumb:hover .img-del { display: block; }
-.img-drop-zone { border: 1.5px dashed var(--border-em); border-radius: var(--radius); padding: 20px 16px; text-align: center; cursor: pointer; font-size: 12px; color: var(--hint); margin-top: 8px; position: relative; transition: border-color .15s, color .15s; }
-.img-drop-zone:hover, .img-drop-zone.drag-over { border-color: var(--accent); color: var(--accent-text); }
-.img-drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.img-caption { font-size: 11px; color: var(--hint); margin-top: 4px; }
+/* ── Inline entry editor (full-width, no popup) ── */
+.entry-editor{width:100%;}
+.ee-row{margin-bottom:16px;}
+.ee-label{font-size:10px;text-transform:uppercase;letter-spacing:0.09em;color:var(--hint);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.ee-input{width:100%;padding:10px 12px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:14px;font-family:var(--sans);outline:none;}
+.ee-input:focus{border-color:var(--accent);}
+.ee-textarea{width:100%;padding:12px 14px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:13px;font-family:var(--mono);outline:none;resize:vertical;min-height:120px;line-height:1.75;}
+.ee-textarea:focus{border-color:var(--accent);}
+.ee-notes{font-family:var(--sans);line-height:1.75;min-height:100px;}
+.ee-tags-input{font-family:var(--sans);}
+.ee-save-bar{display:flex;align-items:center;gap:10px;padding:14px 0 4px;border-top:0.5px solid var(--border);margin-top:8px;}
+.ee-save-btn{padding:9px 24px;border-radius:var(--radius);border:none;background:var(--accent);cursor:pointer;font-size:13px;color:#1a1200;font-family:var(--sans);font-weight:600;}
+.ee-save-btn:hover{opacity:0.9;}
+.ee-discard-btn{padding:9px 16px;border-radius:var(--radius);border:0.5px solid var(--border-em);background:transparent;cursor:pointer;font-size:13px;color:var(--muted);font-family:var(--sans);}
+.ee-discard-btn:hover{color:var(--text);}
+.ee-autosave-hint{font-size:11px;color:var(--hint);}
 
-/* lightbox */
-#lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 999; align-items: center; justify-content: center; padding: 16px; }
-#lightbox.open { display: flex; }
-#lightbox img { max-width: 100%; max-height: 100%; border-radius: var(--radius-lg); object-fit: contain; }
-#lightbox-close { position: fixed; top: 16px; right: 16px; background: var(--card2); border: 0.5px solid var(--border-em); border-radius: var(--radius); color: var(--muted); cursor: pointer; font-size: 13px; padding: 7px 14px; font-family: var(--sans); }
+/* view mode */
+.field-label{font-size:10px;text-transform:uppercase;letter-spacing:0.09em;color:var(--hint);margin-bottom:7px;}
+.cmd-block{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px;font-family:var(--mono);font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-all;color:var(--accent-text);position:relative;}
+.copy-btn{position:absolute;top:8px;right:8px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--card2);cursor:pointer;font-size:11px;color:var(--hint);padding:4px 10px;font-family:var(--sans);}
+.copy-btn:hover{color:var(--accent-text);border-color:var(--accent);}
+.notes-block{background:var(--card);border:0.5px solid var(--border);border-left:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;font-size:13px;line-height:1.75;color:var(--text);white-space:pre-wrap;margin-bottom:18px;}
+.tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.tag{background:var(--tag-bg);color:var(--tag-text);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;}
 
-/* modal */
-#overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
-#overlay.open { display: flex; }
-.modal { background: var(--card); border: 0.5px solid var(--border-em); border-radius: var(--radius-lg); padding: 24px 22px 28px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; }
-.modal::-webkit-scrollbar { width: 3px; }
-.modal::-webkit-scrollbar-thumb { background: var(--border-em); }
-.modal h2 { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 18px; }
-.form-row { margin-bottom: 14px; }
-.form-row label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.06em; }
-.form-row input, .form-row textarea { width: 100%; padding: 10px 12px; border: 0.5px solid var(--border-em); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 14px; font-family: var(--sans); outline: none; -webkit-appearance: none; }
-.form-row textarea { font-family: var(--mono); resize: vertical; min-height: 100px; line-height: 1.65; font-size: 13px; }
-.form-row input:focus, .form-row textarea:focus { border-color: var(--accent); }
-.form-hint { font-size: 11px; color: var(--hint); margin-top: 4px; }
-.form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
-.btn-cancel { padding: 10px 18px; border-radius: var(--radius); border: 0.5px solid var(--border-em); background: transparent; cursor: pointer; font-size: 13px; color: var(--muted); font-family: var(--sans); }
-.btn-cancel:hover { color: var(--text); }
-.btn-save { padding: 10px 22px; border-radius: var(--radius); border: none; background: var(--accent); cursor: pointer; font-size: 13px; color: #1a1200; font-family: var(--sans); font-weight: 600; }
-.btn-save:hover { opacity: 0.9; }
+/* ── Images ── */
+.images-section{margin-bottom:18px;}
+.img-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+.img-thumb{position:relative;border-radius:var(--radius);border:0.5px solid var(--border);overflow:hidden;cursor:zoom-in;}
+.img-thumb img{display:block;max-width:min(320px,100%);max-height:220px;object-fit:cover;}
+.img-del{position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.75);border:none;border-radius:var(--radius);cursor:pointer;font-size:11px;color:#fff;padding:3px 8px;display:none;}
+.img-thumb:hover .img-del{display:block;}
+.img-drop-zone{border:1.5px dashed var(--border-em);border-radius:var(--radius);padding:20px 16px;text-align:center;cursor:pointer;font-size:12px;color:var(--hint);margin-top:8px;position:relative;transition:border-color .15s,color .15s;}
+.img-drop-zone:hover,.img-drop-zone.drag-over{border-color:var(--accent);color:var(--accent-text);}
+.img-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.img-caption{font-size:11px;color:var(--hint);margin-top:4px;}
 
-.empty-msg { text-align: center; padding: 50px 20px; color: var(--hint); font-size: 13px; }
-.empty-msg .hint2 { font-size: 11px; margin-top: 6px; }
+/* ── Lightbox ── */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;align-items:center;justify-content:center;padding:16px;}
+#lightbox.open{display:flex;}
+#lightbox img{max-width:100%;max-height:100%;border-radius:var(--radius-lg);object-fit:contain;}
+#lightbox-close{position:fixed;top:16px;right:16px;background:var(--card2);border:0.5px solid var(--border-em);border-radius:var(--radius);color:var(--muted);cursor:pointer;font-size:13px;padding:7px 14px;font-family:var(--sans);}
 
-#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--card2); border: 0.5px solid var(--accent); border-radius: var(--radius); padding: 8px 18px; font-size: 12px; color: var(--accent-text); z-index: 9999; opacity: 0; transition: opacity .25s; pointer-events: none; white-space: nowrap; }
-#toast.show { opacity: 1; }
+/* ── Toast ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--card2);border:0.5px solid var(--accent);border-radius:var(--radius);padding:8px 18px;font-size:12px;color:var(--accent-text);z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;}
 
-/* mobile */
-@media (max-width: 640px) {
-  #hamburger { display: block; }
-  .tagline { display: none; }
-  #sync-label { display: none; }
-  #sidebar { position: fixed; left: 0; top: var(--nav-h); bottom: 0; z-index: 40; transform: translateX(-100%); width: min(300px, 85vw); box-shadow: 4px 0 24px rgba(0,0,0,0.5); }
-  #sidebar.open { transform: translateX(0); }
-  #sidebar-overlay { display: block; opacity: 0; pointer-events: none; transition: opacity .25s; }
-  #sidebar-overlay.open { opacity: 1; pointer-events: all; }
-  .desktop-only { display: none !important; }
-  #overlay { align-items: flex-end; padding: 0; }
-  .modal { border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-height: 85vh; }
-  .cmd-block { font-size: 12px; }
+/* ── Mobile ── */
+@media(max-width:640px){
+  #hamburger{display:block;}
+  .tagline{display:none;}
+  #sync-label{display:none;}
+  #sidebar{position:fixed;left:0;top:var(--nav-h);bottom:0;z-index:40;transform:translateX(-100%);width:min(300px,85vw);box-shadow:4px 0 24px rgba(0,0,0,0.5);}
+  #sidebar.open{transform:translateX(0);}
+  #sidebar-overlay{display:block;opacity:0;pointer-events:none;transition:opacity .25s;}
+  #sidebar-overlay.open{opacity:1;pointer-events:all;}
+  .desktop-only{display:none!important;}
+  #content{padding:16px 16px;}
+  .cmd-block{font-size:12px;}
+  .entry-editor .ee-textarea{min-height:80px;}
 }
 </style>
 </head>
@@ -195,11 +207,11 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); disp
 <div id="loading-screen">
   <div class="l-logo">⌨ cmdref</div>
   <div class="spinner"></div>
-  <div class="l-msg">Connecting to database…</div>
+  <div class="l-msg">Connecting…</div>
 </div>
 
 <div id="topnav">
-  <button id="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+  <button id="hamburger" onclick="toggleSidebar()">☰</button>
   <span class="logo">⌨ cmdref</span>
   <span class="tagline">command reference</span>
   <div class="spacer"></div>
@@ -212,296 +224,340 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); disp
   <div id="sidebar-overlay" onclick="closeSidebar()"></div>
   <div id="sidebar">
     <div id="search-wrap">
-      <input id="search" type="text" placeholder="Search…" oninput="filterTree(this.value)" />
+      <input id="search" type="text" placeholder="Search…" oninput="filterTree(this.value)"/>
     </div>
     <div id="sort-bar">
       <label>Sort:</label>
-      <button class="sort-btn active" onclick="setSort('created')" id="sb-created">Created</button>
-      <button class="sort-btn" onclick="setSort('modified')" id="sb-modified">Modified</button>
-      <button class="sort-btn" onclick="setSort('alpha')" id="sb-alpha">A–Z</button>
-      <button class="sort-btn" onclick="setSort('dir')" id="sb-dir">↑↓</button>
+      <button class="sort-btn active" id="sb-created" onclick="setSort('created')">Created</button>
+      <button class="sort-btn" id="sb-modified" onclick="setSort('modified')">Modified</button>
+      <button class="sort-btn" id="sb-alpha" onclick="setSort('alpha')">A–Z</button>
+      <button class="sort-btn" id="sb-dir" onclick="setSort('dir')">↑ Asc</button>
     </div>
     <div id="tree"></div>
-    <button class="btn-add-sec desktop-only" onclick="openAddNodeModal(null,0)">＋ Add section</button>
+    <div id="sidebar-actions">
+      <button class="btn-add-sec desktop-only" onclick="showAddSectionForm()">＋ Add section</button>
+    </div>
     <div id="sidebar-footer"></div>
   </div>
+
   <div id="main">
     <div id="breadbar">
       <div id="breadcrumb">select a task</div>
-      <button id="btn-add-entry" class="desktop-only" onclick="openAddEntryModal()" style="display:none;">＋ Add task</button>
     </div>
     <div id="content">
-      <div id="welcome">
-        <div class="wicon">⌨</div>
-        <p>Select a task from the sidebar, or add a new section to get started.</p>
-      </div>
+      <div id="welcome"><div class="wicon">⌨</div><p>Select a task from the sidebar or add a new section to get started.</p></div>
     </div>
   </div>
 </div>
 
 <div id="lightbox" onclick="closeLightbox()">
   <button id="lightbox-close" onclick="closeLightbox()">✕ close</button>
-  <img id="lightbox-img" src="" alt="" />
+  <img id="lightbox-img" src="" alt=""/>
 </div>
-<div id="overlay"><div class="modal" id="modal-body"></div></div>
 <div id="toast"></div>
-<input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)" />
+<input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)"/>
 
 <script>
-/* ── Supabase config ── */
-const SB_URL = 'https://raakpyeidaavvfevfpjm.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhYWtweWVpZGFhdnZmZXZmcGptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODMxODQsImV4cCI6MjA4OTg1OTE4NH0.Zg-ZeBbOZRrSKQFK0jrBEWrgtU0Hw7LpvZFffYw3NDk';
-const DB_ROW  = 'main'; // single row key storing entire tree
+/* ── Supabase ── */
+const SB_URL='https://raakpyeidaavvfevfpjm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhYWtweWVpZGFhdnZmZXZmcGptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODMxODQsImV4cCI6MjA4OTg1OTE4NH0.Zg-ZeBbOZRrSKQFK0jrBEWrgtU0Hw7LpvZFffYw3NDk';
+const DB_ROW='main';
 
-async function sbFetch(path, opts={}) {
-  const res = await fetch(`${SB_URL}/rest/v1${path}`, {
-    ...opts,
-    headers: {
-      'apikey': SB_KEY,
-      'Authorization': `Bearer ${SB_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': opts.prefer || '',
-      ...opts.headers
-    }
-  });
-  if (!res.ok) { const t = await res.text(); throw new Error(t); }
-  const ct = res.headers.get('content-type')||'';
-  return ct.includes('json') ? res.json() : null;
+async function sbFetch(path,opts={}){
+  const res=await fetch(`${SB_URL}/rest/v1${path}`,{...opts,headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates',...(opts.headers||{})}});
+  if(!res.ok){const t=await res.text();throw new Error(t);}
+  const ct=res.headers.get('content-type')||'';
+  return ct.includes('json')?res.json():null;
 }
-
-/* ── Load / Save ── */
-async function loadFromDB() {
-  const rows = await sbFetch(`/entries?id=eq.${DB_ROW}&select=data`);
-  if (rows && rows.length > 0) return rows[0].data;
-  return { sections: [] };
+async function loadFromDB(){
+  const rows=await sbFetch(`/entries?id=eq.${DB_ROW}&select=data`);
+  return(rows&&rows.length>0)?rows[0].data:{sections:[]};
 }
-
-let saveTimer = null;
-function persist() {
+let saveTimer=null;
+function persist(){
   setSyncStatus('saving');
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    try {
-      await sbFetch('/entries', {
-        method: 'POST',
-        prefer: 'resolution=merge-duplicates',
-        headers: { 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify({ id: DB_ROW, data: db, updated_at: new Date().toISOString() })
-      });
-      setSyncStatus('ok');
-    } catch(e) {
-      setSyncStatus('err');
-      showToast('Save failed — check connection');
-    }
-  }, 600);
+  saveTimer=setTimeout(async()=>{
+    try{await sbFetch('/entries',{method:'POST',body:JSON.stringify({id:DB_ROW,data:db,updated_at:new Date().toISOString()})});setSyncStatus('ok');}
+    catch(e){setSyncStatus('err');showToast('Save failed — check connection');}
+  },600);
+}
+function setSyncStatus(s){
+  document.getElementById('sync-dot').className=s;
+  document.getElementById('sync-label').textContent=s==='ok'?'saved':s==='saving'?'saving…':'error';
 }
 
-function setSyncStatus(state) {
-  const dot = document.getElementById('sync-dot');
-  const lbl = document.getElementById('sync-label');
-  dot.className = state;
-  lbl.textContent = state === 'ok' ? 'saved' : state === 'saving' ? 'saving…' : 'error';
-}
+/* ── State ── */
+let db={sections:[]};
+let activePath=[];
+let filterText='';
+let openNodes=new Set();
+let sortMode='created';
+let sortAsc=true;
+let editingEntryId=null; // tracks if we're in inline edit mode
 
-/* ── App state ── */
-let db = { sections: [] };
-let activePath = [];
-let filterText = '';
-let openNodes = new Set();
-let sortMode = 'created'; // created | modified | alpha | dir
-let sortAsc = true;
-
-function setSort(mode) {
-  if (sortMode === mode) { sortAsc = !sortAsc; }
-  else { sortMode = mode; sortAsc = true; }
-  ['created','modified','alpha','dir'].forEach(m => {
-    const btn = document.getElementById('sb-'+m);
-    if (btn) btn.className = 'sort-btn' + (m===sortMode?' active':'');
+/* ── Sort ── */
+function setSort(mode){
+  if(sortMode===mode){sortAsc=!sortAsc;}else{sortMode=mode;sortAsc=true;}
+  ['created','modified','alpha','dir'].forEach(m=>{
+    const b=document.getElementById('sb-'+m);
+    if(b)b.className='sort-btn'+(m===sortMode?' active':'');
   });
-  // Update dir button label
-  const dirBtn = document.getElementById('sb-dir');
-  if (dirBtn) dirBtn.textContent = sortAsc ? '↑ Asc' : '↓ Desc';
+  document.getElementById('sb-dir').textContent=sortAsc?'↑ Asc':'↓ Desc';
   renderTree();
 }
-
-function sortNodes(nodes) {
-  const arr = [...nodes];
-  arr.sort((a, b) => {
-    let cmp = 0;
-    if (sortMode === 'alpha') {
-      cmp = (a.id||'').localeCompare(b.id||'', undefined, {numeric:true});
-    } else if (sortMode === 'modified') {
-      cmp = (a.updatedAt||a.createdAt||'').localeCompare(b.updatedAt||b.createdAt||'');
-    } else if (sortMode === 'created') {
-      cmp = (a.createdAt||'').localeCompare(b.createdAt||'');
-    } else {
-      // 'dir' just reverses creation order
-      cmp = (a.createdAt||'').localeCompare(b.createdAt||'');
-    }
-    return sortAsc ? cmp : -cmp;
+function sortNodes(nodes){
+  return [...nodes].sort((a,b)=>{
+    let c=0;
+    if(sortMode==='alpha') c=(a.id||'').localeCompare(b.id||'',undefined,{numeric:true});
+    else if(sortMode==='modified') c=(a.updatedAt||a.createdAt||'').localeCompare(b.updatedAt||b.createdAt||'');
+    else c=(a.createdAt||'').localeCompare(b.createdAt||'');
+    return sortAsc?c:-c;
   });
-  return arr;
 }
 
-/* ── Tree helpers ── */
-function findNode(id, nodes) {
-  for (const n of nodes) {
-    if (n.id === id) return n;
-    if (n.children) { const f = findNode(id, n.children); if (f) return f; }
-  }
-  return null;
-}
-function findParent(id, nodes, parent=null) {
-  for (const n of nodes) {
-    if (n.id === id) return parent;
-    if (n.children) { const f = findParent(id, n.children, n); if (f !== undefined) return f; }
-  }
-  return undefined;
-}
-function getDepth(id, nodes, d=0) {
-  for (const n of nodes) {
-    if (n.id === id) return d;
-    if (n.children) { const r = getDepth(id, n.children, d+1); if (r !== -1) return r; }
-  }
-  return -1;
-}
-function isLeaf(node) { return !node.children; }
-function countLeaves(node) {
-  if (isLeaf(node)) return 1;
-  return (node.children||[]).reduce((a,c)=>a+countLeaves(c),0);
-}
-function totalLeaves() { return db.sections.reduce((a,c)=>a+countLeaves(c),0); }
-function allTitles(excludeId) {
-  const titles = [];
-  function walk(nodes) { nodes.forEach(n => { if (n.id !== excludeId) titles.push(n.title.trim().toLowerCase()); if (n.children) walk(n.children); }); }
-  walk(db.sections); return titles;
-}
-function buildBreadcrumbParts(targetId, nodes=db.sections, path=[]) {
-  for (const n of nodes) {
-    const cur = [...path, {id:n.id,title:n.title}];
-    if (n.id === targetId) return cur;
-    if (n.children) { const r = buildBreadcrumbParts(targetId, n.children, cur); if (r) return r; }
+/* ── Node helpers ── */
+function findNode(id,nodes){for(const n of nodes){if(n.id===id)return n;if(n.children){const f=findNode(id,n.children);if(f)return f;}}return null;}
+function getDepth(id,nodes,d=0){for(const n of nodes){if(n.id===id)return d;if(n.children){const r=getDepth(id,n.children,d+1);if(r!==-1)return r;}}return -1;}
+function isLeaf(node){return!node.children;}
+function countLeaves(node){if(isLeaf(node))return 1;return(node.children||[]).reduce((a,c)=>a+countLeaves(c),0);}
+function totalLeaves(){return db.sections.reduce((a,c)=>a+countLeaves(c),0);}
+function allTitles(excludeId){const t=[];function w(n){n.forEach(x=>{if(x.id!==excludeId)t.push(x.title.trim().toLowerCase());if(x.children)w(x.children);});}w(db.sections);return t;}
+function buildBreadcrumbParts(targetId,nodes=db.sections,path=[]){
+  for(const n of nodes){
+    const cur=[...path,{id:n.id,title:n.title}];
+    if(n.id===targetId)return cur;
+    if(n.children){const r=buildBreadcrumbParts(targetId,n.children,cur);if(r)return r;}
   }
   return null;
 }
 
 /* ── Tree render ── */
-function renderTree() {
-  const tree = document.getElementById('tree');
-  const q = filterText.toLowerCase();
-  tree.innerHTML = '';
-
-  function nodeMatches(n) {
-    if (isLeaf(n)) return !q || n.id.includes(q) || n.title.toLowerCase().includes(q) || (n.commands||'').toLowerCase().includes(q);
-    return (n.children||[]).some(c=>nodeMatches(c));
+function renderTree(){
+  const tree=document.getElementById('tree');
+  const q=filterText.toLowerCase();
+  tree.innerHTML='';
+  function nodeMatches(n){
+    if(isLeaf(n))return!q||n.id.includes(q)||n.title.toLowerCase().includes(q)||(n.commands||'').toLowerCase().includes(q);
+    return(n.children||[]).some(c=>nodeMatches(c));
   }
-
-  function buildNode(node, depth) {
-    if (q && !nodeMatches(node)) return null;
-    const leaf = isLeaf(node);
-    const isOpen = q ? true : openNodes.has(node.id);
-    const isActive = leaf
-      ? activePath[activePath.length-1] === node.id
-      : activePath.includes(node.id) && activePath[activePath.length-1] === node.id;
-
-    const wrap = document.createElement('div');
-    wrap.className = `node lvl${depth+1}` + (!leaf && isOpen ? ' open' : '');
-
-    const btn = document.createElement('button');
-    btn.className = 'node-btn' + (isActive ? ' active' : '');
-
-    if (!leaf) {
-      const chev = document.createElement('span'); chev.className='chevron'; chev.textContent='▶'; btn.appendChild(chev);
-    } else {
-      const dot = document.createElement('span'); dot.className='node-dot'+(node.commands||node.images?.length?' filled':''); btn.appendChild(dot);
-    }
-    const idSpan = document.createElement('span'); idSpan.className='node-id'; idSpan.style.fontSize=depth===0?'13px':'12px'; idSpan.textContent=node.id; btn.appendChild(idSpan);
-    const lblSpan = document.createElement('span'); lblSpan.className='node-label'; lblSpan.style.cssText='font-size:11px;color:var(--hint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; lblSpan.textContent=node.title; btn.appendChild(lblSpan);
-    if (!leaf) { const badge=document.createElement('span'); badge.className='node-badge'; badge.textContent=countLeaves(node); btn.appendChild(badge); }
-
-    btn.onclick = () => {
-      if (leaf) { selectEntry(node.id); closeSidebar(); }
-      else {
-        if (openNodes.has(node.id)) openNodes.delete(node.id); else openNodes.add(node.id);
-        activePath = buildBreadcrumbParts(node.id)?.map(p=>p.id) || [node.id];
-        renderTree(); showFolderView(node.id);
+  function buildNode(node,depth){
+    if(q&&!nodeMatches(node))return null;
+    const leaf=isLeaf(node);
+    const isOpen=q?true:openNodes.has(node.id);
+    const isActive=leaf?activePath[activePath.length-1]===node.id:activePath[activePath.length-1]===node.id;
+    const wrap=document.createElement('div');
+    wrap.className=`node lvl${depth+1}`+(!leaf&&isOpen?' open':'');
+    const btn=document.createElement('button');
+    btn.className='node-btn'+(isActive?' active':'');
+    if(!leaf){const ch=document.createElement('span');ch.className='chevron';ch.textContent='▶';btn.appendChild(ch);}
+    else{const d=document.createElement('span');d.className='node-dot'+(node.commands||node.images?.length?' filled':'');btn.appendChild(d);}
+    const idS=document.createElement('span');idS.className='node-id';idS.style.fontSize=depth===0?'13px':'12px';idS.textContent=node.id;btn.appendChild(idS);
+    const lblS=document.createElement('span');lblS.className='node-label';lblS.style.cssText='font-size:11px;color:var(--hint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';lblS.textContent=node.title;btn.appendChild(lblS);
+    if(!leaf){const bg=document.createElement('span');bg.className='node-badge';bg.textContent=countLeaves(node);btn.appendChild(bg);}
+    btn.onclick=()=>{
+      if(leaf){selectEntry(node.id);closeSidebar();}
+      else{
+        if(openNodes.has(node.id))openNodes.delete(node.id);else openNodes.add(node.id);
+        activePath=buildBreadcrumbParts(node.id)?.map(p=>p.id)||[node.id];
+        renderTree();showFolderView(node.id);
       }
     };
     wrap.appendChild(btn);
-
-    if (!leaf && node.children) {
-      const cc = document.createElement('div'); cc.className=`lvl${depth+1}-children`;
-      sortNodes(node.children).forEach(child => { const el=buildNode(child,depth+1); if(el) cc.appendChild(el); });
+    if(!leaf&&node.children){
+      const cc=document.createElement('div');cc.className=`lvl${depth+1}-children`;
+      sortNodes(node.children).forEach(child=>{const el=buildNode(child,depth+1);if(el)cc.appendChild(el);});
       wrap.appendChild(cc);
     }
     return wrap;
   }
+  sortNodes(db.sections).forEach(sec=>{const el=buildNode(sec,0);if(el)tree.appendChild(el);});
+  const sf=document.getElementById('sidebar-footer');
+  if(sf)sf.textContent=`${db.sections.length} sections · ${totalLeaves()} tasks`;
+}
 
-  sortNodes(db.sections).forEach(sec => { const el=buildNode(sec,0); if(el) tree.appendChild(el); });
-  const sf = document.getElementById('sidebar-footer');
-  if (sf) sf.textContent = `${db.sections.length} sections · ${totalLeaves()} tasks`;
+/* ── Breadcrumb ── */
+function setBreadcrumb(nodeId){
+  const parts=buildBreadcrumbParts(nodeId);
+  if(!parts){document.getElementById('breadcrumb').textContent='select a task';return;}
+  document.getElementById('breadcrumb').innerHTML=parts.map((p,i)=>
+    i<parts.length-1?`<span style="cursor:pointer;color:var(--muted)" onclick="showFolderView('${esc(p.id)}')">${esc(p.id)}</span> <span style="color:var(--hint);margin:0 4px;">/</span>`
+    :`<span class="hi">${esc(p.id)}</span>`
+  ).join('');
 }
 
 /* ── Folder view ── */
-function showFolderView(nodeId) {
-  const node = findNode(nodeId, db.sections); if (!node||isLeaf(node)) return;
-  const depth = getDepth(nodeId, db.sections);
-  const parts = buildBreadcrumbParts(nodeId);
-  document.getElementById('breadcrumb').innerHTML = parts.map((p,i)=>
-    i<parts.length-1 ? `<span style="cursor:pointer;color:var(--muted)" onclick="showFolderView('${esc(p.id)}')">${esc(p.id)}</span> <span style="color:var(--hint);margin:0 4px;">/</span>`
-    : `<span class="hi">${esc(p.id)}</span>`
-  ).join('');
-  document.getElementById('btn-add-entry').style.display='none';
+function showFolderView(nodeId){
+  const node=findNode(nodeId,db.sections);if(!node||isLeaf(node))return;
+  const depth=getDepth(nodeId,db.sections);
+  activePath=buildBreadcrumbParts(nodeId)?.map(p=>p.id)||[nodeId];
+  editingEntryId=null;
+  setBreadcrumb(nodeId);
+  renderTree();
 
-  const childItems = sortNodes(node.children||[]).map(c => {
-    const meta = isLeaf(c) ? (c.tags||[]).slice(0,2).join(', ')||'' : `${countLeaves(c)} tasks`;
-    return `<div class="child-card" onclick="${isLeaf(c)?`selectEntry('${esc(c.id)}')`:`showFolderView('${esc(c.id)}')`}">
+  const childItems=sortNodes(node.children||[]).map(c=>{
+    const meta=isLeaf(c)?(c.tags||[]).slice(0,2).join(', ')||'':(`${countLeaves(c)} tasks`);
+    return`<div class="child-card" onclick="${isLeaf(c)?`selectEntry('${esc(c.id)}')`:`showFolderView('${esc(c.id)}')`}">
       <span class="c-id">${esc(c.id)}</span><span class="c-title">${esc(c.title)}</span>
       <span class="c-meta">${esc(meta)}</span><span class="c-arrow">›</span></div>`;
   }).join('');
 
-  const addBtns = [
-    depth===0 ? `<button class="btn-sm primary desktop-only" onclick="openAddNodeModal('${esc(nodeId)}',1)">+ Add subsection</button>` : '',
-    depth===1 ? `<button class="btn-sm primary desktop-only" onclick="openAddEntryModalUnder('${esc(nodeId)}')">+ Add task</button>` : '',
-    `<button class="btn-sm desktop-only" onclick="openEditNodeModal('${esc(nodeId)}')">Rename</button>`,
+  const addBtns=[
+    depth===0?`<button class="btn-sm primary desktop-only" onclick="showAddTaskForm('${esc(nodeId)}','subsection')">+ Add subsection</button>`:'',
+    depth===1?`<button class="btn-sm primary desktop-only" onclick="showAddTaskForm('${esc(nodeId)}','task')">+ Add task</button>`:'',
+    `<button class="btn-sm desktop-only" onclick="showRenameForm('${esc(nodeId)}')">Rename</button>`,
     `<button class="btn-sm danger desktop-only" onclick="deleteNode('${esc(nodeId)}')">Delete</button>`
   ].join('');
 
-  document.getElementById('content').innerHTML = `
-    <div class="folder-view">
-      <div class="folder-title">${esc(node.id)}</div>
-      <div class="folder-subtitle">${esc(node.title)}</div>
+  document.getElementById('content').innerHTML=`
+    <div class="folder-header">
+      <div class="folder-id">${esc(node.id)}</div>
+      <div class="folder-title-text">${esc(node.title)}</div>
       <div class="folder-actions">${addBtns}</div>
-      <div class="children-list">${childItems||'<div class="empty-msg" style="padding:20px 0;">No items yet.<div class="hint2">Use the buttons above to add content.</div></div>'}</div>
+    </div>
+    <div id="inline-form-area"></div>
+    <div class="children-list">${childItems||'<div style="color:var(--hint);font-size:13px;padding:20px 0;">No items yet. Use the buttons above to add content.</div>'}</div>
+  `;
+  document.getElementById('content').scrollTop=0;
+}
+
+/* ── Inline forms for add section / subsection / task ── */
+function showAddSectionForm(){
+  // Show inline form at top of content panel
+  const content=document.getElementById('content');
+  content.innerHTML=`
+    <div class="inline-form" id="add-sec-form">
+      <h3>New section</h3>
+      <div class="if-row"><label>ID</label><input id="f-nid" placeholder="e.g. 5 or ASA"/></div>
+      <div class="if-row"><label>Title</label><input id="f-ntitle" placeholder="Descriptive name"/></div>
+      <div class="if-actions">
+        <button class="if-save" onclick="submitAddNode(null,0)">Add section</button>
+        <button class="if-cancel" onclick="cancelForm()">Cancel</button>
+      </div>
     </div>`;
+  document.getElementById('breadcrumb').textContent='new section';
+  setTimeout(()=>document.getElementById('f-nid')?.focus(),50);
 }
 
-/* ── Entry view ── */
-function selectEntry(entryId) {
-  const node = findNode(entryId, db.sections); if (!node) return;
-  activePath = buildBreadcrumbParts(entryId).map(p=>p.id);
-  openNodes.add(activePath[0]); if (activePath[1]) openNodes.add(activePath[1]);
-  renderTree(); renderEntry(entryId);
+function showAddTaskForm(parentId,type){
+  const area=document.getElementById('inline-form-area');
+  if(!area)return;
+  const label=type==='subsection'?'New subsection':'New task';
+  const isTask=type==='task';
+  area.innerHTML=`
+    <div class="inline-form">
+      <h3>${label}</h3>
+      <div class="if-row"><label>ID</label><input id="f-nid" placeholder="e.g. 5.1 or ASA-VPN"/></div>
+      <div class="if-row"><label>Title</label><input id="f-ntitle" placeholder="Descriptive name"/></div>
+      ${isTask?`
+      <div class="if-row"><label>Commands</label><textarea id="f-cmds" placeholder="Paste CLI commands here…" rows="4"></textarea></div>
+      <div class="if-row"><label>Notes</label><textarea id="f-notes" placeholder="Context, caveats…" rows="3" style="font-family:var(--sans);"></textarea></div>
+      <div class="if-row"><label>Tags (comma-separated)</label><input id="f-tags" placeholder="vpn, ipsec"/></div>`:''}
+      <div class="if-actions">
+        <button class="if-save" onclick="${isTask?`submitAddTask('${esc(parentId)}')`:`submitAddNode('${esc(parentId)}',1)`}">${isTask?'Add task':'Add subsection'}</button>
+        <button class="if-cancel" onclick="document.getElementById('inline-form-area').innerHTML=''">Cancel</button>
+      </div>
+    </div>`;
+  setTimeout(()=>document.getElementById('f-nid')?.focus(),50);
+  area.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function renderEntry(entryId) {
-  const entry = findNode(entryId, db.sections); if (!entry) return;
-  const parts = buildBreadcrumbParts(entryId);
-  document.getElementById('breadcrumb').innerHTML = parts.map((p,i)=>
-    i<parts.length-1 ? `<span style="cursor:pointer;color:var(--muted)" onclick="showFolderView('${esc(p.id)}')">${esc(p.id)}</span> <span style="color:var(--hint);margin:0 4px;">/</span>`
-    : `<span class="hi">${esc(p.id)}</span>`
-  ).join('');
-  document.getElementById('btn-add-entry').style.display='none';
+function showRenameForm(nodeId){
+  const node=findNode(nodeId,db.sections);if(!node)return;
+  const content=document.getElementById('content');
+  const area=document.getElementById('inline-form-area');
+  const target=area||content;
+  const html=`
+    <div class="inline-form" id="rename-form">
+      <h3>Rename <span style="font-family:var(--mono);color:var(--accent-text)">${esc(node.id)}</span></h3>
+      <div class="if-row"><label>Title</label><input id="f-ntitle" value="${esc(node.title)}"/></div>
+      <div class="if-actions">
+        <button class="if-save" onclick="submitRename('${esc(nodeId)}')">Save</button>
+        <button class="if-cancel" onclick="showFolderView('${esc(nodeId)}')">Cancel</button>
+      </div>
+    </div>`;
+  if(area){area.innerHTML=html;}
+  else{content.innerHTML=html;}
+  setTimeout(()=>document.getElementById('f-ntitle')?.focus(),50);
+}
 
-  const hasCmds = entry.commands?.trim();
-  const hasNotes = entry.notes?.trim();
-  const imgs = entry.images||[];
+function cancelForm(){
+  // Go back to welcome
+  document.getElementById('content').innerHTML=`<div id="welcome"><div class="wicon">⌨</div><p>Select a task from the sidebar or add a new section.</p></div>`;
+  document.getElementById('breadcrumb').textContent='select a task';
+}
 
-  document.getElementById('content').innerHTML = `
-    <div class="entry-header">
-      <div style="min-width:0;"><div class="entry-id">${esc(entry.id)}</div><div class="entry-title-disp">${esc(entry.title)}</div></div>
+/* ── Submit section/subsection ── */
+function submitAddNode(parentId,depth){
+  const id=document.getElementById('f-nid').value.trim();
+  const title=document.getElementById('f-ntitle').value.trim();
+  if(!id){showToast('ID is required');document.getElementById('f-nid').focus();return;}
+  if(findNode(id,db.sections)){showToast('That ID already exists.');document.getElementById('f-nid').focus();return;}
+  if(title&&allTitles().includes(title.toLowerCase())){showToast(`"${title}" is already used.`);return;}
+  const now=new Date().toISOString();
+  const newNode={id,title:title||id,children:[],createdAt:now,updatedAt:now};
+  if(!parentId){db.sections.push(newNode);}
+  else{const parent=findNode(parentId,db.sections);if(!parent)return;if(!parent.children)parent.children=[];parent.children.push(newNode);}
+  persist();openNodes.add(id);if(parentId)openNodes.add(parentId);
+  activePath=parentId?[...buildBreadcrumbParts(parentId).map(p=>p.id),id]:[id];
+  renderTree();showFolderView(id);
+}
+
+/* ── Submit task ── */
+function submitAddTask(parentId){
+  const id=document.getElementById('f-nid').value.trim();
+  const title=document.getElementById('f-ntitle').value.trim();
+  if(!id){showToast('ID is required');document.getElementById('f-nid').focus();return;}
+  if(findNode(id,db.sections)){showToast('That ID already exists.');document.getElementById('f-nid').focus();return;}
+  if(title&&allTitles().includes(title.toLowerCase())){showToast(`"${title}" is already used.`);return;}
+  const now=new Date().toISOString();
+  const parent=findNode(parentId,db.sections);if(!parent)return;
+  const entry={id,title:title||id,
+    commands:(document.getElementById('f-cmds')?.value||'').trim(),
+    notes:(document.getElementById('f-notes')?.value||'').trim(),
+    tags:(document.getElementById('f-tags')?.value||'').split(',').map(t=>t.trim()).filter(Boolean),
+    images:[],createdAt:now,updatedAt:now};
+  if(!parent.children)parent.children=[];
+  parent.children.push(entry);
+  persist();openNodes.add(parentId);
+  activePath=[...buildBreadcrumbParts(parentId).map(p=>p.id),id];
+  renderTree();selectEntry(id);
+}
+
+/* ── Submit rename ── */
+function submitRename(nodeId){
+  const node=findNode(nodeId,db.sections);if(!node)return;
+  const newTitle=document.getElementById('f-ntitle').value.trim();
+  if(newTitle&&newTitle.toLowerCase()!==node.title.toLowerCase()&&allTitles(nodeId).includes(newTitle.toLowerCase())){showToast(`"${newTitle}" is already used.`);return;}
+  node.title=newTitle||node.title;
+  node.updatedAt=new Date().toISOString();
+  persist();renderTree();showFolderView(nodeId);
+}
+
+/* ── Select entry ── */
+function selectEntry(entryId){
+  const node=findNode(entryId,db.sections);if(!node)return;
+  activePath=buildBreadcrumbParts(entryId).map(p=>p.id);
+  openNodes.add(activePath[0]);if(activePath[1])openNodes.add(activePath[1]);
+  editingEntryId=null;
+  renderTree();renderEntryView(entryId);
+}
+
+/* ── Entry VIEW mode ── */
+function renderEntryView(entryId){
+  const entry=findNode(entryId,db.sections);if(!entry)return;
+  setBreadcrumb(entryId);
+  const hasCmds=entry.commands?.trim();
+  const hasNotes=entry.notes?.trim();
+  const imgs=entry.images||[];
+  document.getElementById('content').innerHTML=`
+    <div class="entry-topbar">
+      <div class="entry-meta">
+        <div class="entry-id">${esc(entry.id)}</div>
+        <div class="entry-title-disp">${esc(entry.title)}</div>
+      </div>
       <div class="entry-actions desktop-only">
-        <button class="btn-sm primary" onclick="openEditEntryModal('${esc(entryId)}')">Edit</button>
+        <button class="btn-sm primary" onclick="renderEntryEditor('${esc(entryId)}')">Edit</button>
         <button class="btn-sm danger" onclick="deleteNode('${esc(entryId)}')">Delete</button>
       </div>
     </div>
@@ -510,26 +566,92 @@ function renderEntry(entryId) {
     ${hasNotes?`<div class="field-label">Notes</div><div class="notes-block">${esc(entry.notes)}</div>`:''}
     <div class="images-section">
       <div class="field-label">Diagrams / Images</div>
-      <div class="img-grid" id="img-grid-${esc(entryId)}">
-        ${imgs.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del desktop-only" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('')}
-      </div>
+      <div class="img-grid">${imgs.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del desktop-only" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('')}</div>
       <div class="img-drop-zone desktop-only" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'${esc(entryId)}')">
         <input type="file" accept="image/*" multiple onchange="handleFileInput(event,'${esc(entryId)}')"/>
         <div>📎 Drop images here or click to upload</div>
         <div class="img-caption">PNG · JPG · SVG · WEBP — or paste from clipboard (Ctrl+V)</div>
       </div>
     </div>
-    ${!hasCmds&&!hasNotes&&!imgs.length?'<div class="empty-msg">No content yet.<div class="hint2">Click Edit to add commands and notes.</div></div>':''}
+    ${!hasCmds&&!hasNotes&&!imgs.length?'<div style="color:var(--hint);font-size:13px;padding:20px 0;">No content yet. Click Edit to add commands and notes.</div>':''}
   `;
   document.getElementById('content').scrollTop=0;
 }
 
-function copyCmd(entryId, btn) {
-  const entry = findNode(entryId, db.sections); if (!entry?.commands) return;
-  navigator.clipboard.writeText(entry.commands).then(()=>{
-    btn.textContent='copied ✓'; btn.style.color='var(--success)';
-    setTimeout(()=>{btn.textContent='copy';btn.style.color='';},2000);
-  }).catch(()=>{ const ta=document.createElement('textarea');ta.value=entry.commands;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied ✓'); });
+/* ── Entry EDITOR mode (inline, full-width, no popup) ── */
+function renderEntryEditor(entryId){
+  const entry=findNode(entryId,db.sections);if(!entry)return;
+  editingEntryId=entryId;
+  setBreadcrumb(entryId);
+  const imgs=entry.images||[];
+  document.getElementById('content').innerHTML=`
+    <div class="entry-editor">
+      <div class="ee-row">
+        <div class="ee-label">Title</div>
+        <input class="ee-input" id="ee-title" value="${esc(entry.title)}" placeholder="Task title"/>
+      </div>
+      <div class="ee-row">
+        <div class="ee-label">Commands <span style="color:var(--hint);font-size:10px;font-weight:400;">(one per line)</span></div>
+        <textarea class="ee-textarea" id="ee-cmds" placeholder="Paste or type CLI commands here…" rows="8">${esc(entry.commands||'')}</textarea>
+      </div>
+      <div class="ee-row">
+        <div class="ee-label">Notes</div>
+        <textarea class="ee-textarea ee-notes" id="ee-notes" placeholder="Context, caveats, gotchas, task description…" rows="6">${esc(entry.notes||'')}</textarea>
+      </div>
+      <div class="ee-row">
+        <div class="ee-label">Tags <span style="color:var(--hint);font-size:10px;font-weight:400;">(comma-separated)</span></div>
+        <input class="ee-input ee-tags-input" id="ee-tags" value="${esc((entry.tags||[]).join(', '))}" placeholder="vpn, ipsec, phase1"/>
+      </div>
+      <div class="images-section">
+        <div class="ee-label">Diagrams / Images</div>
+        <div class="img-grid" id="img-grid-${esc(entryId)}">${imgs.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('')}</div>
+        <div class="img-drop-zone" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'${esc(entryId)}')">
+          <input type="file" accept="image/*" multiple onchange="handleFileInput(event,'${esc(entryId)}')"/>
+          <div>📎 Drop images here or click to upload</div>
+          <div class="img-caption">PNG · JPG · SVG · WEBP — or paste from clipboard (Ctrl+V)</div>
+        </div>
+      </div>
+      <div class="ee-save-bar">
+        <button class="ee-save-btn" onclick="submitEditEntry('${esc(entryId)}')">Save</button>
+        <button class="ee-discard-btn" onclick="renderEntryView('${esc(entryId)}')">Discard</button>
+        <span class="ee-autosave-hint">Changes are saved when you click Save</span>
+      </div>
+    </div>
+  `;
+  document.getElementById('content').scrollTop=0;
+  document.getElementById('ee-title')?.focus();
+}
+
+/* ── Save edited entry ── */
+function submitEditEntry(entryId){
+  const entry=findNode(entryId,db.sections);if(!entry)return;
+  const newTitle=document.getElementById('ee-title').value.trim();
+  if(newTitle&&newTitle.toLowerCase()!==entry.title.toLowerCase()&&allTitles(entryId).includes(newTitle.toLowerCase())){showToast(`"${newTitle}" is already used.`);return;}
+  entry.title=newTitle||entry.title;
+  entry.commands=document.getElementById('ee-cmds').value.trim();
+  entry.notes=document.getElementById('ee-notes').value.trim();
+  entry.tags=document.getElementById('ee-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  entry.updatedAt=new Date().toISOString();
+  editingEntryId=null;
+  persist();renderTree();renderEntryView(entryId);showToast('Saved ✓');
+}
+
+/* ── Delete ── */
+function deleteNode(nodeId){
+  const node=findNode(nodeId,db.sections);
+  if(!confirm(`Delete ${isLeaf(node)?`task ${nodeId}`:`section ${nodeId} and all its contents`}?`))return;
+  function removeFrom(nodes){const idx=nodes.findIndex(n=>n.id===nodeId);if(idx!==-1){nodes.splice(idx,1);return true;}for(const n of nodes){if(n.children&&removeFrom(n.children))return true;}return false;}
+  removeFrom(db.sections);
+  persist();activePath=[];editingEntryId=null;openNodes.delete(nodeId);renderTree();
+  document.getElementById('content').innerHTML=`<div id="welcome"><div class="wicon">⌨</div><p>Deleted.</p></div>`;
+  document.getElementById('breadcrumb').textContent='select a task';
+}
+
+/* ── Copy commands ── */
+function copyCmd(entryId,btn){
+  const entry=findNode(entryId,db.sections);if(!entry?.commands)return;
+  navigator.clipboard.writeText(entry.commands).then(()=>{btn.textContent='copied ✓';btn.style.color='var(--success)';setTimeout(()=>{btn.textContent='copy';btn.style.color='';},2000);})
+  .catch(()=>{const ta=document.createElement('textarea');ta.value=entry.commands;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied ✓');});
 }
 
 /* ── Images ── */
@@ -541,149 +663,42 @@ function processImages(files,entryId){
   let pending=files.length;
   files.forEach(file=>{
     const reader=new FileReader();
-    reader.onload=ev=>{entry.images.push({name:file.name,data:ev.target.result});if(--pending===0){persist();renderEntry(entryId);showToast('Image saved ✓');}};
+    reader.onload=ev=>{entry.images.push({name:file.name,data:ev.target.result});
+      if(--pending===0){persist();
+        // refresh image grid without losing editor state
+        if(editingEntryId===entryId) renderEntryEditor(entryId);
+        else renderEntryView(entryId);
+        showToast('Image saved ✓');}};
     reader.readAsDataURL(file);
   });
 }
 function deleteImage(entryId,idx){
   if(!confirm('Remove this image?'))return;
   const entry=findNode(entryId,db.sections);if(!entry?.images)return;
-  entry.images.splice(idx,1);persist();renderEntry(entryId);
+  entry.images.splice(idx,1);persist();
+  if(editingEntryId===entryId)renderEntryEditor(entryId);else renderEntryView(entryId);
 }
 
-/* ── Lightbox ── */
-function openLightbox(entryId,idx){const img=findNode(entryId,db.sections)?.images?.[idx];if(!img)return;document.getElementById('lightbox-img').src=img.data;document.getElementById('lightbox').classList.add('open');}
-function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
-
-/* ── Paste ── */
+/* ── Paste images ── */
 document.addEventListener('paste',e=>{
   const entryId=activePath[activePath.length-1];if(!entryId)return;
   const entry=findNode(entryId,db.sections);if(!entry||!isLeaf(entry))return;
   const items=Array.from(e.clipboardData.items).filter(it=>it.type.startsWith('image/'));if(!items.length)return;
   if(!entry.images)entry.images=[];
   let pending=items.length;
-  items.forEach(item=>{const reader=new FileReader();reader.onload=ev=>{entry.images.push({name:`pasted-${Date.now()}.png`,data:ev.target.result});if(--pending===0){persist();renderEntry(entryId);showToast('Image pasted & saved ✓');}};reader.readAsDataURL(item.getAsFile());});
+  items.forEach(item=>{const reader=new FileReader();reader.onload=ev=>{entry.images.push({name:`pasted-${Date.now()}.png`,data:ev.target.result});if(--pending===0){persist();if(editingEntryId===entryId)renderEntryEditor(entryId);else renderEntryView(entryId);showToast('Image pasted ✓');}};reader.readAsDataURL(item.getAsFile());});
 });
 
-/* ── Filter ── */
+/* ── Lightbox ── */
+function openLightbox(entryId,idx){const img=findNode(entryId,db.sections)?.images?.[idx];if(!img)return;document.getElementById('lightbox-img').src=img.data;document.getElementById('lightbox').classList.add('open');}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+
+/* ── Search ── */
 function filterTree(q){filterText=q;renderTree();}
 
 /* ── Sidebar ── */
 function toggleSidebar(){const sb=document.getElementById('sidebar'),ov=document.getElementById('sidebar-overlay');const o=sb.classList.toggle('open');ov.classList.toggle('open',o);}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('open');}
-
-/* ── Add section/subsection ── */
-function openAddNodeModal(parentId,depth){
-  const parent=parentId?findNode(parentId,db.sections):null;
-  const levelName=depth===0?'section':'subsection';
-  showModal(`
-    <h2>Add ${levelName}${parent?` under <span style="color:var(--accent-text);font-family:var(--mono)">${esc(parent.id)}</span>`:''}</h2>
-    <div class="form-row"><label>ID</label><input id="f-nid" placeholder="e.g. 5.1 or ASA-VPN"/></div>
-    <div class="form-row"><label>Title</label><input id="f-ntitle" placeholder="Descriptive name"/></div>
-    <div class="form-actions"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="submitAddNode('${esc(parentId||'')}',${depth})">Add</button></div>
-  `);
-}
-function submitAddNode(parentId,depth){
-  const id=document.getElementById('f-nid').value.trim();
-  const title=document.getElementById('f-ntitle').value.trim();
-  if(!id){alert('ID is required');return;}
-  if(findNode(id,db.sections)){alert('That ID already exists.');return;}
-  if(title&&allTitles().includes(title.toLowerCase())){alert(`"${title}" is already used. Please use a unique title.`);return;}
-  const now=new Date().toISOString();
-  const newNode={id,title:title||id,children:[],createdAt:now,updatedAt:now};
-  if(!parentId){db.sections.push(newNode);}
-  else{const parent=findNode(parentId,db.sections);if(!parent){alert('Parent not found');return;}if(!parent.children)parent.children=[];parent.children.push(newNode);}
-  persist();closeModal();openNodes.add(id);if(parentId)openNodes.add(parentId);
-  activePath=parentId?[parentId,id]:[id];
-  renderTree();showFolderView(id);
-}
-
-/* ── Add task ── */
-function openAddEntryModalUnder(parentId){
-  showModal(`
-    <h2>Add task under <span style="color:var(--accent-text);font-family:var(--mono)">${esc(parentId)}</span></h2>
-    <div class="form-row"><label>Task ID</label><input id="f-id" placeholder="e.g. 5.1.1 or ASA-NAT-1"/></div>
-    <div class="form-row"><label>Title</label><input id="f-title" placeholder="Brief description"/></div>
-    <div class="form-row"><label>Commands</label><textarea id="f-cmds" placeholder="Paste or type CLI commands…" rows="6"></textarea></div>
-    <div class="form-row"><label>Notes</label><textarea id="f-notes" placeholder="Context, caveats, gotchas…" rows="3"></textarea></div>
-    <div class="form-row"><label>Tags (comma-separated)</label><input id="f-tags" placeholder="vpn, ipsec, phase1"/></div>
-    <div class="form-actions"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="submitAddEntry('${esc(parentId)}')">Save</button></div>
-  `);
-}
-function openAddEntryModal(){const parentId=activePath[activePath.length-1];if(parentId)openAddEntryModalUnder(parentId);}
-function submitAddEntry(parentId){
-  const parent=findNode(parentId,db.sections);
-  const id=document.getElementById('f-id').value.trim();
-  const title=document.getElementById('f-title').value.trim();
-  if(!id){alert('Task ID required');return;}
-  if(findNode(id,db.sections)){alert('That ID already exists.');return;}
-  if(title&&allTitles().includes(title.toLowerCase())){alert(`"${title}" is already used. Please use a unique title.`);return;}
-  const now=new Date().toISOString();
-  const entry={id,title:title||id,commands:document.getElementById('f-cmds').value.trim(),notes:document.getElementById('f-notes').value.trim(),tags:document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),images:[],createdAt:now,updatedAt:now};
-  if(!parent.children)parent.children=[];
-  parent.children.push(entry);
-  persist();closeModal();openNodes.add(parentId);
-  activePath=[...buildBreadcrumbParts(parentId).map(p=>p.id),id];
-  renderTree();renderEntry(id);
-}
-
-/* ── Edit entry ── */
-function openEditEntryModal(entryId){
-  const entry=findNode(entryId,db.sections);if(!entry)return;
-  showModal(`
-    <h2>Edit <span style="color:var(--accent-text);font-family:var(--mono)">${esc(entry.id)}</span></h2>
-    <div class="form-row"><label>Title</label><input id="f-title" value="${esc(entry.title)}"/></div>
-    <div class="form-row"><label>Commands</label><textarea id="f-cmds" rows="8">${esc(entry.commands||'')}</textarea></div>
-    <div class="form-row"><label>Notes</label><textarea id="f-notes" rows="4">${esc(entry.notes||'')}</textarea></div>
-    <div class="form-row"><label>Tags (comma-separated)</label><input id="f-tags" value="${esc((entry.tags||[]).join(', '))}"/></div>
-    <div class="form-actions"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="submitEditEntry('${esc(entryId)}')">Save</button></div>
-  `);
-}
-function submitEditEntry(entryId){
-  const entry=findNode(entryId,db.sections);if(!entry)return;
-  const newTitle=document.getElementById('f-title').value.trim();
-  if(newTitle&&newTitle.toLowerCase()!==entry.title.toLowerCase()&&allTitles(entryId).includes(newTitle.toLowerCase())){alert(`"${newTitle}" is already used.`);return;}
-  entry.title=newTitle||entry.title;
-  entry.commands=document.getElementById('f-cmds').value.trim();
-  entry.notes=document.getElementById('f-notes').value.trim();
-  entry.tags=document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
-  entry.updatedAt=new Date().toISOString();
-  persist();closeModal();renderTree();renderEntry(entryId);
-}
-
-/* ── Rename node ── */
-function openEditNodeModal(nodeId){
-  const node=findNode(nodeId,db.sections);if(!node)return;
-  showModal(`
-    <h2>Rename <span style="color:var(--accent-text);font-family:var(--mono)">${esc(node.id)}</span></h2>
-    <div class="form-row"><label>Title</label><input id="f-ntitle" value="${esc(node.title)}"/></div>
-    <div class="form-actions"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-save" onclick="submitRename('${esc(nodeId)}')">Save</button></div>
-  `);
-}
-function submitRename(nodeId){
-  const node=findNode(nodeId,db.sections);if(!node)return;
-  const newTitle=document.getElementById('f-ntitle').value.trim();
-  if(newTitle&&newTitle.toLowerCase()!==node.title.toLowerCase()&&allTitles(nodeId).includes(newTitle.toLowerCase())){alert(`"${newTitle}" is already used.`);return;}
-  node.title=newTitle||node.title;
-  persist();closeModal();renderTree();showFolderView(nodeId);
-}
-
-/* ── Delete ── */
-function deleteNode(nodeId){
-  const node=findNode(nodeId,db.sections);
-  if(!confirm(`Delete ${isLeaf(node)?`task ${nodeId}`:`section ${nodeId} and all its contents`}?`))return;
-  function removeFrom(nodes){const idx=nodes.findIndex(n=>n.id===nodeId);if(idx!==-1){nodes.splice(idx,1);return true;}for(const n of nodes){if(n.children&&removeFrom(n.children))return true;}return false;}
-  removeFrom(db.sections);
-  persist();activePath=[];openNodes.delete(nodeId);renderTree();
-  document.getElementById('content').innerHTML=`<div id="welcome"><div class="wicon">⌨</div><p>Deleted.</p></div>`;
-  document.getElementById('breadcrumb').innerHTML='select a task';
-  document.getElementById('btn-add-entry').style.display='none';
-}
-
-/* ── Modal ── */
-function showModal(html){document.getElementById('modal-body').innerHTML=html;document.getElementById('overlay').classList.add('open');setTimeout(()=>document.querySelector('.modal input,.modal textarea')?.focus(),100);}
-function closeModal(){document.getElementById('overlay').classList.remove('open');}
-document.getElementById('overlay').addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closeModal();});
 
 /* ── Export / Import ── */
 function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cmdref-backup.json';a.click();URL.revokeObjectURL(url);}
@@ -696,10 +711,9 @@ function handleImport(e){
       const parsed=JSON.parse(ev.target.result);
       if(!parsed.sections)throw new Error();
       if(confirm('Replace all current data with this backup?')){
-        db=parsed;persist();activePath=[];openNodes.clear();renderTree();
+        db=parsed;persist();activePath=[];openNodes.clear();editingEntryId=null;renderTree();
         document.getElementById('content').innerHTML=`<div id="welcome"><div class="wicon">⌨</div><p>Imported successfully.</p></div>`;
-        document.getElementById('breadcrumb').innerHTML='select a task';
-        document.getElementById('btn-add-entry').style.display='none';
+        document.getElementById('breadcrumb').textContent='select a task';
         showToast('Import successful ✓');
       }
     }catch{alert('Invalid backup file.');}
@@ -713,14 +727,8 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 /* ── Boot ── */
 (async()=>{
-  try {
-    db = await loadFromDB();
-    setSyncStatus('ok');
-  } catch(e) {
-    setSyncStatus('err');
-    showToast('Could not connect to database');
-    db = { sections: [] };
-  }
+  try{db=await loadFromDB();setSyncStatus('ok');}
+  catch(e){setSyncStatus('err');showToast('Could not connect to database');db={sections:[]};}
   document.getElementById('loading-screen').style.display='none';
   renderTree();
 })();
