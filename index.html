@@ -180,7 +180,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .syn-output{color:var(--syn-output);}
 .syn-comment{color:var(--syn-comment);font-style:italic;}
 .syn-keyword{color:var(--syn-keyword);}
-.syn-bold{font-weight:700;color:var(--text);}
+.syn-bold{font-weight:700;color:#ffffff;font-size:1.05em;text-shadow:0 0 8px rgba(255,255,255,0.3);}
 
 /* ── Images in view ── */
 .images-section{margin-bottom:18px;}
@@ -480,7 +480,7 @@ function extractCommands(raw){
 function addCmd(groups, device, cmd){
   let grp = groups.find(g => g.device === device);
   if(!grp){ grp = {device, commands:[]}; groups.push(grp); }
-  if(!grp.commands.includes(cmd)) grp.commands.push(cmd);
+  grp.commands.push(cmd); // allow duplicates — exit/end appear multiple times intentionally
 }
 
 function renderCmdSummary(raw){
