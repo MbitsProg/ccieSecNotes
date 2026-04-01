@@ -384,8 +384,12 @@ const INLINE_CMD_RE = /^(.*?)\s#\s(.+)$/;
 function applyBold(escaped){
   return escaped.replace(/\*\*(.+?)\*\*/g,'<span class="syn-bold">$1</span>');
 }
+// Strip ** markers for plain text output (command summary, copy)
+function stripBold(text){
+  return text.replace(/\*\*(.+?)\*\*/g,'$1');
+}
 function applyTask(html){
-  return html.replace(/TASK/g,'<span class="syn-task">TASK</span>');
+  return html.replace(/\bTASK\b/g,'<span class="syn-task"><strong>TASK</strong></span>');
 }
 
 function highlightSmart(raw){
@@ -465,11 +469,18 @@ function extractCommands(raw){
       return;
     }
 
-    // Prompt line with command after #: "ASA(config)# nat ..."
-    const promptMatch = trimmed.match(/^[A-Za-z0-9_][A-Za-z0-9_\-]*(\([^)]*\))*#\s+(.+)/);
+    // Prompt line with command after #: "ASA(config)# nat ..." / "SW1(config-if)# ip address ..."
+    // Device name can be R1, R2, ASA, FTD, SW1, ISE, or any hostname
+    const promptMatch = trimmed.match(/^([A-Za-z0-9][A-Za-z0-9_\-]*)(\([^)]*\))*#\s+(.+)/);
     if(promptMatch){
-      const cmd = promptMatch[2].trim();
-      if(cmd) addCmd(groups, currentDevice, cmd);
+      // Use the device hostname as the group name if we don't have an "On X:" override
+      const hostname = promptMatch[1];
+      const cmd = promptMatch[3].trim();
+      if(cmd){
+        // If still in 'General', switch to the hostname as device
+        const effectiveDevice = (currentDevice === 'General') ? hostname : currentDevice;
+        addCmd(groups, effectiveDevice, cmd);
+      }
       return;
     }
   });
@@ -493,7 +504,7 @@ function renderCmdSummary(raw){
       <div class="cmd-summary-device"><span class="device-label">${escHtml(grp.device)}</span></div>
       ${grp.commands.map((cmd,i)=>`
         <div class="cmd-line">
-          <span class="cmd-line-text">${escHtml(cmd)}</span>
+          <span class="cmd-line-text">${escHtml(stripBold(cmd))}</span>
         </div>`).join('')}
     </div>`).join('');
 }
@@ -717,7 +728,9 @@ function renderEntryView(entryId){
         <div class="entry-title-disp">${esc(entry.title)}</div>
       </div>
       <div class="entry-actions desktop-only">
-        <button class="btn-sm primary" onclick="renderEntryEditor('${esc(entryId)}')">Edit</button>
+        <button class="btn-sm" onclick="editField('${esc(entryId)}','title')" title="Edit title">Title</button>
+        <button class="btn-sm" onclick="editField('${esc(entryId)}','tags')" title="Edit tags">Tags</button>
+        <button class="btn-sm primary" onclick="renderEntryEditor('${esc(entryId)}')" title="Edit all content">Edit Content</button>
         <button class="btn-sm danger" onclick="deleteNode('${esc(entryId)}')">Delete</button>
       </div>
     </div>
@@ -755,6 +768,68 @@ function renderEntryView(entryId){
     b.addEventListener('click',()=>switchTab(b.dataset.tab));
   });
 }
+
+/* ── Focused field editors ── */
+function editField(entryId, field){
+  const entry = findNode(entryId, db.sections); if(!entry) return;
+  const wrapper = document.createElement('div');
+  wrapper.id = 'field-edit-overlay';
+  wrapper.style.cssText = 'position:sticky;top:0;z-index:10;background:var(--card);border:0.5px solid var(--accent);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:20px;';
+
+  if(field === 'title'){
+    wrapper.innerHTML = `
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);margin-bottom:8px;">Edit Title</div>
+      <input id="fe-input" style="width:100%;padding:10px 12px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:15px;font-family:var(--sans);outline:none;" value="${escJs(entry.title)}"/>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="if-save" onclick="saveField('${escJs(entryId)}','title')">Save</button>
+        <button class="if-cancel" onclick="closeFieldEdit('${escJs(entryId)}')">Cancel</button>
+      </div>`;
+  } else if(field === 'tags'){
+    wrapper.innerHTML = `
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--hint);margin-bottom:8px;">Edit Tags <span style="font-weight:400;text-transform:none;">(comma-separated)</span></div>
+      <input id="fe-input" style="width:100%;padding:10px 12px;border:0.5px solid var(--border-em);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:14px;font-family:var(--sans);outline:none;" value="${escJs((entry.tags||[]).join(', '))}" placeholder="vpn, ipsec, nat"/>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="if-save" onclick="saveField('${escJs(entryId)}','tags')">Save</button>
+        <button class="if-cancel" onclick="closeFieldEdit('${escJs(entryId)}')">Cancel</button>
+      </div>`;
+  }
+
+  // Insert overlay at top of content panel
+  const contentEl = document.getElementById('content');
+  contentEl.insertBefore(wrapper, contentEl.firstChild);
+  contentEl.scrollTop = 0;
+  setTimeout(()=>document.getElementById('fe-input')?.focus(), 50);
+
+  // Allow Enter to save
+  document.getElementById('fe-input').addEventListener('keydown', e=>{
+    if(e.key==='Enter') saveField(entryId, field);
+    if(e.key==='Escape') closeFieldEdit(entryId);
+  });
+}
+
+function saveField(entryId, field){
+  const entry = findNode(entryId, db.sections); if(!entry) return;
+  const val = document.getElementById('fe-input')?.value || '';
+  if(field === 'title'){
+    const newTitle = val.trim();
+    if(newTitle && newTitle.toLowerCase()!==entry.title.toLowerCase() && allTitles(entryId).includes(newTitle.toLowerCase())){
+      showToast('"'+newTitle+'" is already used.'); return;
+    }
+    entry.title = newTitle || entry.title;
+  } else if(field === 'tags'){
+    entry.tags = val.split(',').map(t=>t.trim()).filter(Boolean);
+  }
+  entry.updatedAt = new Date().toISOString();
+  persist(); renderTree(); renderEntryView(entryId); showToast('Saved ✓');
+}
+
+function closeFieldEdit(entryId){
+  const ov = document.getElementById('field-edit-overlay');
+  if(ov) ov.remove();
+}
+
+// escJs: escape for JS string literals inside HTML onclick attributes
+function escJs(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
 
 /* ── Entry EDITOR ── */
 function renderEntryEditor(entryId){
