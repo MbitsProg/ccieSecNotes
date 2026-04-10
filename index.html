@@ -212,6 +212,66 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);display:flex
 .ee-unified:focus{border-color:var(--accent);}
 .ee-tags-input{font-family:var(--sans);}
 .autosave-bar{display:flex;align-items:center;gap:10px;padding:12px 0 4px;border-top:0.5px solid var(--border);margin-top:8px;}
+/* ── Notebook block editor ── */
+.nb-editor{width:100%;}
+.nb-block{position:relative;margin-bottom:0;}
+.nb-text-block textarea{
+  width:100%;padding:14px 16px;
+  border:0.5px solid transparent;
+  border-radius:var(--radius);
+  background:transparent;
+  color:var(--text);font-size:15px;font-family:var(--mono);
+  outline:none;resize:none;line-height:1.9;
+  min-height:60px;overflow-y:hidden;
+  transition:border-color .15s,background .15s;
+  overflow-anchor:none;
+}
+.nb-text-block textarea:focus{
+  border-color:var(--border-em);
+  background:var(--surface);
+}
+.nb-img-block{position:relative;margin:8px 0;border-radius:var(--radius-lg);overflow:hidden;border:0.5px solid var(--border);}
+.nb-img-block img{display:block;width:100%;height:auto;cursor:zoom-in;}
+.nb-img-block.sz-small img{max-width:320px;}
+.nb-img-block.sz-medium img{max-width:600px;}
+.nb-img-block.sz-full img{max-width:100%;}
+.nb-img-controls{
+  position:absolute;top:8px;right:8px;
+  display:none;gap:4px;
+}
+.nb-img-block:hover .nb-img-controls{display:flex;}
+.nb-img-btn{
+  padding:3px 9px;border-radius:var(--radius);border:0.5px solid var(--border-em);
+  background:rgba(15,17,23,0.85);cursor:pointer;font-size:11px;
+  color:var(--text);font-family:var(--sans);backdrop-filter:blur(4px);
+}
+.nb-img-btn:hover{color:var(--accent-text);border-color:var(--accent);}
+.nb-img-btn.danger:hover{color:var(--danger);border-color:var(--danger);}
+.nb-img-caption{font-size:11px;color:var(--hint);padding:5px 10px;background:var(--card2);}
+
+/* Insert-image zone between blocks */
+.nb-insert-zone{
+  position:relative;height:24px;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+}
+.nb-insert-zone:hover{opacity:1;}
+.nb-insert-line{position:absolute;left:0;right:0;top:50%;height:1px;background:var(--accent);opacity:0.4;}
+.nb-insert-btn{
+  position:relative;z-index:1;
+  padding:2px 10px;border-radius:20px;border:0.5px solid var(--accent);
+  background:var(--card);cursor:pointer;font-size:11px;color:var(--accent-text);
+  font-family:var(--sans);display:flex;align-items:center;gap:5px;
+}
+.nb-insert-btn:hover{background:var(--accent-dim);}
+.nb-drop-active{background:var(--accent-dim);border-radius:var(--radius);outline:2px dashed var(--accent);}
+
+/* View mode inline images */
+.nb-view-img{margin:12px 0;border-radius:var(--radius-lg);overflow:hidden;border:0.5px solid var(--border);}
+.nb-view-img img{display:block;width:100%;height:auto;cursor:zoom-in;}
+.nb-view-img.sz-small img{max-width:320px;}
+.nb-view-img.sz-medium img{max-width:600px;}
+.nb-view-img.sz-full img{max-width:100%;}
+
 .edit-mode-banner{display:flex;align-items:center;gap:8px;padding:9px 14px;margin-bottom:18px;background:var(--card2);border-radius:var(--radius);border-left:3px solid var(--accent);font-size:12px;color:var(--muted);}
 .edit-mode-icon{color:var(--accent-text);font-size:14px;}
 .edit-mode-sep{color:var(--hint);}
@@ -339,6 +399,10 @@ function saveDraft(entryId,content,tags,title){
 }
 function loadDraft(entryId){
   try{const d=localStorage.getItem('draft_'+entryId);return d?JSON.parse(d):null;}catch(e){return null;}
+}
+function hasDraftNewer(entryId,entry){
+  const draft=loadDraft(entryId);
+  return draft&&draft.ts>((entry.updatedAt?new Date(entry.updatedAt).getTime():0));
 }
 function clearDraft(entryId){
   try{localStorage.removeItem('draft_'+entryId);}catch(e){}
@@ -752,15 +816,34 @@ function submitRename(nodeId){
   showToast('Saved ✓');
 }
 
-/* ── Migration: old entries (commands+notes) → new unified content ── */
+/* ── Migration ── */
 function migrateEntry(entry){
-  if(entry.content!==undefined)return entry; // already migrated
-  const parts=[];
-  if(entry.commands&&entry.commands.trim())parts.push(entry.commands.trim());
-  if(entry.notes&&entry.notes.trim()){if(parts.length)parts.push('');parts.push(entry.notes.trim());}
-  entry.content=parts.join('\n');
-  delete entry.commands;delete entry.notes;
+  // Step 1: commands+notes → content string
+  if(entry.content===undefined){
+    const parts=[];
+    if(entry.commands&&entry.commands.trim())parts.push(entry.commands.trim());
+    if(entry.notes&&entry.notes.trim()){if(parts.length)parts.push('');parts.push(entry.notes.trim());}
+    entry.content=parts.join('\n');
+    delete entry.commands; delete entry.notes;
+  }
+  // Step 2: content string + images[] → blocks[]
+  if(!entry.blocks){
+    entry.blocks=[];
+    if(entry.content) entry.blocks.push({type:'text',content:entry.content});
+    (entry.images||[]).forEach(img=>{
+      entry.blocks.push({type:'image',data:img.data,name:img.name||'image',size:'full'});
+    });
+    delete entry.images;
+    // Keep content for Commands Summary extraction (derived from blocks)
+  }
+  // Always keep entry.content in sync for extractCommands
+  entry.content = entry.blocks.filter(b=>b.type==='text').map(b=>b.content).join('\n');
   return entry;
+}
+
+// Get all images from blocks
+function entryImages(entry){
+  return (entry.blocks||[]).filter(b=>b.type==='image');
 }
 
 /* ── Select entry ── */
@@ -786,9 +869,26 @@ function renderEntryView(entryId){
   const entry=findNode(entryId,db.sections);if(!entry)return;
   migrateEntry(entry);
   setBreadcrumb(entryId);
-  const imgs=entry.images||[];
-  const highlighted=highlightSmart(entry.content||'');
   const cmdSummaryHtml=renderCmdSummary(entry.content||'');
+
+  // Build inline block HTML
+  const blocksHtml=(entry.blocks||[]).map((blk,i)=>{
+    if(blk.type==='text'){
+      const hl=highlightSmart(blk.content||'');
+      return blk.content?.trim()
+        ?`<div class="content-block"><div class="content-block-inner">${hl}</div></div>`
+        :'';
+    } else if(blk.type==='image'){
+      const sz=blk.size||'full';
+      return `<div class="nb-view-img sz-${esc(sz)}" onclick="openLightboxBlock('${esc(entryId)}',${i})">
+        <img src="${blk.data}" alt="${esc(blk.name||'image')}" title="${esc(blk.name||'')}"/>
+      </div>`;
+    }
+    return '';
+  }).join('');
+
+  const hasContent=(entry.blocks||[]).some(b=>(b.type==='text'&&b.content?.trim())||(b.type==='image'));
+
   document.getElementById('content').innerHTML=`
     <div class="entry-topbar">
       <div class="entry-meta">
@@ -798,7 +898,7 @@ function renderEntryView(entryId){
       <div class="entry-actions desktop-only" id="entry-action-bar">
         <button class="btn-sm" id="btn-edit-title" onclick="editField('${esc(entryId)}','title')" title="Edit title">Title</button>
         <button class="btn-sm" id="btn-edit-tags" onclick="editField('${esc(entryId)}','tags')" title="Edit tags">Tags</button>
-        <button class="btn-sm primary" id="btn-edit-content" onclick="renderEntryEditor('${esc(entryId)}')" title="Edit all content">Edit Content</button>
+        <button class="btn-sm primary" id="btn-edit-content" onclick="renderEntryEditor('${esc(entryId)}')" title="Edit content">Edit</button>
         <button class="btn-sm danger" onclick="deleteNode('${esc(entryId)}')">Delete</button>
       </div>
     </div>
@@ -808,33 +908,24 @@ function renderEntryView(entryId){
       <button class="tab-btn ${activeTab==='summary'?'active':''}" data-tab="summary" onclick="switchTab('summary')">Commands Summary</button>
     </div>
     <div class="tab-panel ${activeTab==='content'?'active':''}" data-tab="content">
-      ${entry.content?.trim()?`
-        <div class="content-block">
-          <div class="content-block-inner">${highlighted}</div>
-          <div class="copy-bar">
-            <span>Content</span>
-            <button class="copy-btn" onclick="copyContent('${esc(entryId)}',this)">Copy all</button>
-          </div>
-        </div>`:'<div style="color:var(--hint);font-size:13px;padding:20px 0;">No content yet. Click Edit to start writing.</div>'}
-      <div class="images-section">
-        <div class="field-label">Diagrams / Images</div>
-        <div class="img-grid">${imgs.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del desktop-only" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('')}</div>
-        <div class="img-drop-zone desktop-only" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'${esc(entryId)}')">
-          <input type="file" accept="image/*" multiple onchange="handleFileInput(event,'${esc(entryId)}')"/>
-          <div>📎 Drop images here, click to upload, or press Ctrl+V to paste</div>
-          <div class="img-caption">PNG · JPG · SVG · WEBP</div>
-        </div>
-      </div>
+      ${hasContent?blocksHtml+'<div class="copy-bar" style="margin-top:12px;"><span>Text content</span><button class="copy-btn" onclick="copyContent(''+esc(entryId)+'',this)">Copy text</button></div>':'<div style="color:var(--hint);font-size:13px;padding:20px 0;">No content yet. Click Edit to start writing.</div>'}
     </div>
     <div class="tab-panel ${activeTab==='summary'?'active':''}" data-tab="summary">
       ${cmdSummaryHtml}
     </div>
   `;
   document.getElementById('content').scrollTop=0;
-  // Re-attach tab click state after innerHTML replace
   document.querySelectorAll('.tab-btn').forEach(b=>{
     b.addEventListener('click',()=>switchTab(b.dataset.tab));
   });
+}
+
+function openLightboxBlock(entryId,blockIdx){
+  const entry=findNode(entryId,db.sections);
+  const blk=entry?.blocks?.[blockIdx];
+  if(!blk||blk.type!=='image')return;
+  document.getElementById('lightbox-img').src=blk.data;
+  document.getElementById('lightbox').classList.add('open');
 }
 
 /* ── Focused field editors ── */
@@ -933,99 +1024,264 @@ function closeFieldEdit(entryId){
 // escJs: escape for JS string literals inside HTML onclick attributes
 function escJs(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
 
-/* ── Entry EDITOR ── */
+/* ── Entry EDITOR — notebook block editor ── */
+
+// Working copy of blocks during editing (not saved until user hits Save)
+let editorBlocks = [];
+
 function renderEntryEditor(entryId){
   const entry=findNode(entryId,db.sections);if(!entry)return;
   migrateEntry(entry);
   editingEntryId=entryId;
   setBreadcrumb(entryId);
-  const imgs=entry.images||[];
 
-  // Check for draft backup
+  // Start with a copy of blocks for editing
+  // Check draft
   const draft=loadDraft(entryId);
-  const hasDraft=draft&&draft.ts>( (entry.updatedAt?new Date(entry.updatedAt).getTime():0));
-  const contentToShow=hasDraft?draft.content:(entry.content||'');
-  const tagsToShow=hasDraft?draft.tags:((entry.tags||[]).join(', '));
-  const titleToShow=hasDraft?draft.title:(entry.title||'');
+  const hasDraft=draft&&draft.ts>((entry.updatedAt?new Date(entry.updatedAt).getTime():0));
+  editorBlocks = hasDraft && draft.blocks
+    ? JSON.parse(JSON.stringify(draft.blocks))
+    : JSON.parse(JSON.stringify(entry.blocks||[]));
 
-  document.getElementById('content').innerHTML=`
-    <div class="entry-editor">
+  // Ensure at least one text block
+  if(!editorBlocks.length) editorBlocks.push({type:'text',content:''});
+
+  const contentEl=document.getElementById('content');
+  contentEl.innerHTML=`
+    <div class="nb-editor" id="nb-editor-root">
       <div class="edit-mode-banner">
         <span class="edit-mode-icon">✎</span>
-        <span>Editing content &amp; diagrams</span>
+        <span>Notebook editor — text &amp; images inline</span>
         <span class="edit-mode-sep">·</span>
-        <span class="edit-mode-note">To edit Title or Tags, Save or Discard first</span>
+        <span class="edit-mode-note">**bold** · hostname# = prompt · On R1: = device · ! = comment</span>
       </div>
-      ${hasDraft?`<div style="background:var(--accent-dim);border:0.5px solid var(--accent);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--accent-text);">
-        ⚠ A draft was recovered from your last session.
-        <button onclick="clearDraft('${esc(entryId)}');renderEntryEditor('${esc(entryId)}')" style="margin-left:12px;background:none;border:0.5px solid var(--accent);border-radius:var(--radius);color:var(--accent-text);cursor:pointer;font-size:11px;padding:2px 8px;">Discard draft</button>
+      ${hasDraft?`<div style="background:var(--accent-dim);border:0.5px solid var(--accent);border-radius:var(--radius);padding:9px 14px;margin-bottom:14px;font-size:12px;color:var(--accent-text);">
+        ⚠ Draft recovered. <button onclick="clearDraft('${esc(entryId)}');renderEntryEditor('${esc(entryId)}')" style="margin-left:8px;background:none;border:0.5px solid var(--accent);border-radius:var(--radius);color:var(--accent-text);cursor:pointer;font-size:11px;padding:2px 8px;">Discard</button>
       </div>`:''}
-      <div class="ee-row">
-        <div class="ee-label">
-          Content
-          <span class="ee-hint">— commands, show output, notes · **bold** · hostname# = prompt · ! = comment · On R1: = device section</span>
-        </div>
-        <textarea class="ee-unified" id="ee-content" placeholder="Type or paste commands, show output, notes — everything goes here…
-
-Example:
-TASK Configure NAT
-
-On ASA:
-ASA(config)# nat (inside,outside) source dynamic any interface
-!
-**Note:** Configure NAT before applying ACL.
-ASA(config)#">${esc(contentToShow)}</textarea>
-      </div>
-      <div class="images-section">
-        <div class="ee-label">Diagrams / Images <span class="ee-hint">— paste Ctrl+V, drag &amp; drop, or upload</span></div>
-        <div class="img-grid" id="img-grid-${esc(entryId)}">${imgs.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('')}</div>
-        <div class="img-drop-zone" id="img-drop-${esc(entryId)}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'${esc(entryId)}')">
-          <input type="file" accept="image/*" multiple onchange="handleFileInput(event,'${esc(entryId)}')"/>
-          <div>📎 Drop images here or click to upload</div>
-          <div class="img-caption">PNG · JPG · SVG · WEBP · paste with Ctrl+V</div>
-        </div>
-      </div>
+      <div id="nb-blocks-container"></div>
       <div class="autosave-bar">
         <button class="ee-save-btn" onclick="submitEditEntry('${esc(entryId)}')">Save</button>
         <button class="ee-discard-btn" onclick="discardEdit('${esc(entryId)}')">Discard</button>
-        <span class="autosave-hint" id="autosave-hint">Draft auto-saved locally</span>
+        <span class="autosave-hint" id="autosave-hint">Auto-saves draft locally</span>
       </div>
     </div>`;
 
-  document.getElementById('content').scrollTop=0;
+  contentEl.scrollTop=0;
+  renderEditorBlocks(entryId);
+  startDraftAutosave(entryId);
+}
 
-  // Textarea uses fixed height with internal scroll — no auto-grow, prevents caret-scroll issue
-  const ta=document.getElementById('ee-content');
-
-  // Auto-save draft every 5 seconds while typing
-  ta.addEventListener('input',()=>{
-    clearTimeout(autoSaveTimer);
-    autoSaveTimer=setTimeout(()=>{
-      const hint=document.getElementById('autosave-hint');
-      saveDraft(entryId,ta.value,'','');
-      if(hint){hint.textContent='Draft saved locally ✓';hint.className='autosave-hint saved';}
-      setTimeout(()=>{if(hint){hint.textContent='Draft auto-saved locally';hint.className='autosave-hint';}},2000);
-    },3000);
+function renderEditorBlocks(entryId){
+  const container=document.getElementById('nb-blocks-container');
+  if(!container)return;
+  container.innerHTML='';
+  editorBlocks.forEach((blk,i)=>{
+    // Insert zone before each block
+    container.appendChild(makeInsertZone(entryId, i));
+    // Block itself
+    if(blk.type==='text'){
+      container.appendChild(makeTextBlock(entryId, i, blk));
+    } else if(blk.type==='image'){
+      container.appendChild(makeImageBlock(entryId, i, blk));
+    }
   });
+  // Insert zone at end
+  container.appendChild(makeInsertZone(entryId, editorBlocks.length));
+}
 
-  document.getElementById('ee-content')?.focus();
+function makeInsertZone(entryId, insertIdx){
+  const div=document.createElement('div');
+  div.className='nb-insert-zone';
+  div.dataset.idx=insertIdx;
+  // Drag-over target
+  div.addEventListener('dragover',e=>{
+    e.preventDefault();
+    div.classList.add('nb-drop-active');
+  });
+  div.addEventListener('dragleave',()=>div.classList.remove('nb-drop-active'));
+  div.addEventListener('drop',e=>{
+    e.preventDefault();
+    div.classList.remove('nb-drop-active');
+    const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));
+    if(files.length) insertImagesAt(entryId, insertIdx, files);
+  });
+  div.innerHTML=`<div class="nb-insert-line"></div>
+    <button class="nb-insert-btn" title="Insert image here">
+      📷 Insert image
+    </button>`;
+  div.querySelector('.nb-insert-btn').addEventListener('click',()=>{
+    triggerImageInsert(entryId, insertIdx);
+  });
+  return div;
+}
+
+function makeTextBlock(entryId, i, blk){
+  const wrap=document.createElement('div');
+  wrap.className='nb-block nb-text-block';
+  wrap.dataset.idx=i;
+  const ta=document.createElement('textarea');
+  ta.value=blk.content||'';
+  ta.placeholder='Type commands, show output, or notes here…';
+  ta.spellcheck=false;
+  // Auto-grow
+  const scrollBox=document.getElementById('content');
+  function grow(){
+    const sy=scrollBox?scrollBox.scrollTop:0;
+    ta.style.height='0';
+    ta.style.height=ta.scrollHeight+'px';
+    if(scrollBox)scrollBox.scrollTop=sy;
+  }
+  ta.addEventListener('input',()=>{
+    blk.content=ta.value;
+    grow();
+    scheduleDraftSave(entryId);
+  });
+  ta.addEventListener('keydown',e=>{
+    // Ctrl+Enter inserts a new text block after this one
+    if(e.key==='Enter'&&e.ctrlKey){
+      e.preventDefault();
+      editorBlocks.splice(i+1,0,{type:'text',content:''});
+      renderEditorBlocks(entryId);
+      // Focus the new block
+      setTimeout(()=>{
+        const textareas=document.querySelectorAll('#nb-blocks-container .nb-text-block textarea');
+        textareas[i+1]?.focus();
+      },30);
+    }
+  });
+  wrap.appendChild(ta);
+  setTimeout(grow,10);
+  return wrap;
+}
+
+function makeImageBlock(entryId, i, blk){
+  const wrap=document.createElement('div');
+  const sz=blk.size||'full';
+  wrap.className=`nb-block nb-img-block sz-${sz}`;
+  wrap.dataset.idx=i;
+  // Draggable for repositioning
+  wrap.draggable=true;
+  wrap.addEventListener('dragstart',e=>{
+    e.dataTransfer.setData('nb-block-idx',String(i));
+    e.dataTransfer.effectAllowed='move';
+  });
+  const img=document.createElement('img');
+  img.src=blk.data;
+  img.alt=blk.name||'image';
+  img.title='Click to view full size';
+  img.addEventListener('click',()=>{
+    document.getElementById('lightbox-img').src=blk.data;
+    document.getElementById('lightbox').classList.add('open');
+  });
+  // Controls
+  const ctrl=document.createElement('div');
+  ctrl.className='nb-img-controls';
+  ctrl.innerHTML=`
+    <button class="nb-img-btn" onclick="cycleImgSize('${esc(entryId)}',${i})" title="Cycle size: small / medium / full">⇔ ${sz}</button>
+    <button class="nb-img-btn danger" onclick="deleteBlock('${esc(entryId)}',${i})">✕</button>`;
+  const cap=document.createElement('div');
+  cap.className='nb-img-caption';
+  cap.textContent=blk.name||'image';
+  wrap.appendChild(img);
+  wrap.appendChild(ctrl);
+  wrap.appendChild(cap);
+  // Accept drops on image block to reorder
+  wrap.addEventListener('dragover',e=>{e.preventDefault();});
+  wrap.addEventListener('drop',e=>{
+    e.preventDefault();
+    const fromIdx=parseInt(e.dataTransfer.getData('nb-block-idx'));
+    if(isNaN(fromIdx)||fromIdx===i)return;
+    const moved=editorBlocks.splice(fromIdx,1)[0];
+    const toIdx=fromIdx<i?i-1:i;
+    editorBlocks.splice(toIdx,0,moved);
+    renderEditorBlocks(entryId);
+    scheduleDraftSave(entryId);
+  });
+  return wrap;
+}
+
+function cycleImgSize(entryId, i){
+  const sizes=['small','medium','full'];
+  const blk=editorBlocks[i];if(!blk||blk.type!=='image')return;
+  const cur=blk.size||'full';
+  blk.size=sizes[(sizes.indexOf(cur)+1)%sizes.length];
+  renderEditorBlocks(entryId);
+}
+
+function deleteBlock(entryId, i){
+  if(editorBlocks[i]?.type==='image'&&!confirm('Remove this image?'))return;
+  editorBlocks.splice(i,1);
+  if(!editorBlocks.some(b=>b.type==='text')) editorBlocks.push({type:'text',content:''});
+  renderEditorBlocks(entryId);
+  scheduleDraftSave(entryId);
+}
+
+// Hidden file input for inserting images at position
+let _insertCallback=null;
+function triggerImageInsert(entryId, idx){
+  let fi=document.getElementById('nb-file-insert');
+  if(!fi){
+    fi=document.createElement('input');
+    fi.id='nb-file-insert';fi.type='file';fi.accept='image/*';fi.multiple=true;
+    fi.style.display='none';
+    document.body.appendChild(fi);
+  }
+  fi.value='';
+  _insertCallback=(files)=>insertImagesAt(entryId,idx,files);
+  fi.onchange=e=>{ if(_insertCallback) _insertCallback(Array.from(e.target.files)); };
+  fi.click();
+}
+
+function insertImagesAt(entryId, idx, files){
+  const pending={n:files.length,done:0};
+  const toInsert=[];
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      toInsert.push({type:'image',data:ev.target.result,name:file.name,size:'full'});
+      pending.done++;
+      if(pending.done===pending.n){
+        toInsert.forEach((blk,j)=>editorBlocks.splice(idx+j,0,blk));
+        renderEditorBlocks(entryId);
+        scheduleDraftSave(entryId);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Auto-save draft
+let _draftTimer=null;
+function scheduleDraftSave(entryId){
+  clearTimeout(_draftTimer);
+  _draftTimer=setTimeout(()=>{
+    try{localStorage.setItem('draft_'+entryId,JSON.stringify({blocks:editorBlocks,ts:Date.now()}));}catch(e){}
+    const hint=document.getElementById('autosave-hint');
+    if(hint){hint.textContent='Draft saved ✓';hint.className='autosave-hint saved';setTimeout(()=>{if(hint){hint.textContent='Auto-saves draft locally';hint.className='autosave-hint';}},2000);}
+  },3000);
+}
+function startDraftAutosave(entryId){
+  // Kick off initial check — handled per-block input events
 }
 
 function discardEdit(entryId){
   clearDraft(entryId);
   editingEntryId=null;
+  editorBlocks=[];
   renderEntryView(entryId);
 }
 
 /* ── Save entry ── */
 function submitEditEntry(entryId){
   const entry=findNode(entryId,db.sections);if(!entry)return;
-  // Content-only edit — title/tags handled by separate field editors
-  // Title and Tags are not in the content editor — only content is edited here
-  entry.content=document.getElementById('ee-content').value;
+  // Save blocks from editor working copy
+  entry.blocks=JSON.parse(JSON.stringify(editorBlocks));
+  // Keep content string in sync for Commands Summary
+  entry.content=entry.blocks.filter(b=>b.type==='text').map(b=>b.content).join('\n');
   entry.updatedAt=new Date().toISOString();
   clearDraft(entryId);
   editingEntryId=null;
+  editorBlocks=[];
   persist();renderTree();renderEntryView(entryId);showToast('Saved ✓');
 }
 
@@ -1042,78 +1298,84 @@ function deleteNode(nodeId){
 
 /* ── Copy content ── */
 function copyContent(entryId,btn){
-  const entry=findNode(entryId,db.sections);if(!entry?.content)return;
-  navigator.clipboard.writeText(entry.content).then(()=>{
+  const entry=findNode(entryId,db.sections);if(!entry)return;
+  const text=(entry.blocks||[]).filter(b=>b.type==='text').map(b=>b.content).join('\n');
+  if(!text)return;
+  navigator.clipboard.writeText(text).then(()=>{
     btn.textContent='Copied ✓';btn.style.color='var(--success)';
-    setTimeout(()=>{btn.textContent='Copy all';btn.style.color='';},2000);
-  }).catch(()=>{const ta=document.createElement('textarea');ta.value=entry.content;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied ✓');});
+    setTimeout(()=>{btn.textContent='Copy text';btn.style.color='';},2000);
+  }).catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied ✓');});
 }
 
-/* ── Images — paste goes to image section, never to textarea ── */
+/* ── Images — paste inserts at focused block position ── */
 document.addEventListener('paste',e=>{
   const entryId=activePath[activePath.length-1];if(!entryId)return;
   const entry=findNode(entryId,db.sections);if(!entry||!isLeaf(entry))return;
   const items=Array.from(e.clipboardData.items).filter(it=>it.type.startsWith('image/'));
   if(!items.length)return;
-  // Always intercept image pastes — prevent them going into any textarea
-  e.preventDefault();
-  e.stopPropagation();
-  if(!entry.images)entry.images=[];
-  let pending=items.length;
-  items.forEach(item=>{
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      entry.images.push({name:`pasted-${Date.now()}.png`,data:ev.target.result});
-      if(--pending===0){
-        persist();
-        // Refresh image grid without losing textarea content
-        if(editingEntryId===entryId){
-          const grid=document.getElementById(`img-grid-${entryId}`);
-          if(grid){
-            grid.innerHTML=entry.images.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('');
-          }
-        }else{renderEntryView(entryId);}
-        showToast('Image pasted ✓');
-      }
-    };
-    reader.readAsDataURL(item.getAsFile());
-  });
-},true); // capture phase — fires before textarea gets it
-
-function handleDrop(e,entryId){e.preventDefault();e.currentTarget.classList.remove('drag-over');processImages(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),entryId);}
-function handleFileInput(e,entryId){processImages(Array.from(e.target.files),entryId);}
-function processImages(files,entryId){
-  const entry=findNode(entryId,db.sections);if(!entry||!files.length)return;
-  if(!entry.images)entry.images=[];
-  let pending=files.length;
-  files.forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      entry.images.push({name:file.name,data:ev.target.result});
-      if(--pending===0){
-        persist();
-        if(editingEntryId===entryId){
-          const grid=document.getElementById(`img-grid-${entryId}`);
-          if(grid)grid.innerHTML=entry.images.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('');
-        }else{renderEntryView(entryId);}
-        showToast('Image saved ✓');
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-}
-function deleteImage(entryId,idx){
-  if(!confirm('Remove this image?'))return;
-  const entry=findNode(entryId,db.sections);if(!entry?.images)return;
-  entry.images.splice(idx,1);persist();
+  e.preventDefault();e.stopPropagation();
+  const files=items.map(it=>it.getAsFile());
   if(editingEntryId===entryId){
-    const grid=document.getElementById(`img-grid-${entryId}`);
-    if(grid)grid.innerHTML=entry.images.map((img,i)=>`<div class="img-thumb"><img src="${img.data}" alt="${esc(img.name||'')}" onclick="openLightbox('${esc(entryId)}',${i})"/><button class="img-del" onclick="deleteImage('${esc(entryId)}',${i})">✕</button></div>`).join('');
-  }else{renderEntryView(entryId);}
+    // Find which text block is focused to insert image after it
+    const focused=document.activeElement;
+    let insertIdx=editorBlocks.length; // default: append at end
+    if(focused&&focused.tagName==='TEXTAREA'){
+      const blkEl=focused.closest('.nb-block');
+      if(blkEl){
+        const idx=parseInt(blkEl.dataset.idx);
+        if(!isNaN(idx)) insertIdx=idx+1;
+      }
+    }
+    insertImagesAt(entryId,insertIdx,files);
+    showToast('Image pasted ✓');
+  } else {
+    // View mode — append to blocks
+    const blks=entry.blocks||[];
+    let pending=files.length;
+    files.forEach(f=>{
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        blks.push({type:'image',data:ev.target.result,name:`pasted-${Date.now()}.png`,size:'full'});
+        if(--pending===0){
+          entry.blocks=blks;
+          entry.content=blks.filter(b=>b.type==='text').map(b=>b.content).join('\n');
+          persist();renderEntryView(entryId);showToast('Image pasted ✓');
+        }
+      };
+      reader.readAsDataURL(f);
+    });
+  }
+},true);
+
+// Image file upload from toolbar (view mode drop)
+function handleViewDrop(e,entryId){
+  e.preventDefault();
+  const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));
+  if(!files.length)return;
+  const entry=findNode(entryId,db.sections);if(!entry)return;
+  let pending=files.length;
+  files.forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      entry.blocks.push({type:'image',data:ev.target.result,name:f.name,size:'full'});
+      if(--pending===0){
+        entry.content=entry.blocks.filter(b=>b.type==='text').map(b=>b.content).join('\n');
+        persist();renderEntryView(entryId);showToast('Image added ✓');
+      }
+    };
+    reader.readAsDataURL(f);
+  });
 }
 
 /* ── Lightbox ── */
-function openLightbox(entryId,idx){const img=findNode(entryId,db.sections)?.images?.[idx];if(!img)return;document.getElementById('lightbox-img').src=img.data;document.getElementById('lightbox').classList.add('open');}
+function openLightbox(entryId,idx){
+  // Legacy: idx into images[] — now use block idx
+  const entry=findNode(entryId,db.sections);if(!entry)return;
+  const imgs=(entry.blocks||[]).filter(b=>b.type==='image');
+  const img=imgs[idx];if(!img)return;
+  document.getElementById('lightbox-img').src=img.data;
+  document.getElementById('lightbox').classList.add('open');
+}
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
 
 /* ── Search / Sidebar ── */
